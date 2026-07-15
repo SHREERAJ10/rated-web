@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleSignUp } from "../../utils/AuthHandlers";
 import getIconFromName from "../../utils/getIconFromName";
+import { AuthContext } from "../../context/AuthContext";
 
 const SIGN_UP_FIELDS = [
   {
@@ -29,7 +30,15 @@ function Register() {
 
   const navigate = useNavigate();
 
-  return (  
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user]);
+
+  return (
     <div className="w-full h-screen flex items-center justify-center">
       <div className="w-[85%] max-w-123.75 border border-[#BEBEBE] rounded-2xl bg-[#FAFAFA] px-6 pt-5 pb-7 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
@@ -85,7 +94,7 @@ function Register() {
           <span className="font-light">Already have an account?</span>
           <a
             className="font-semibold hover:underline cursor-pointer"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
           >
             Login
           </a>

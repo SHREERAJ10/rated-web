@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import getIconFromName from "../../utils/getIconFromName.jsx";
 import { handleLogin } from "../../utils/AuthHandlers.jsx";
+import { AuthContext } from "../../context/AuthContext.js";
 
 const LOGIN_FIELDS = [
   {
@@ -27,6 +28,14 @@ function Login() {
   });
 
   const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
@@ -84,7 +93,7 @@ function Login() {
           <span className="font-light">Don't have an account?</span>
           <a
             className="font-semibold hover:underline cursor-pointer"
-            onClick={() => navigate('/register')}
+            onClick={() => navigate("/register")}
           >
             Register
           </a>
