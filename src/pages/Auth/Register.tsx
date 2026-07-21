@@ -50,7 +50,7 @@ function Register() {
             e.preventDefault();
             try {
               await handleSignUp(signUpData.email, signUpData.password);
-              navigate("/");
+              navigate("/onboarding");
             } catch (err) {
               console.log(err);
             }

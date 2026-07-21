@@ -7,6 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "./context/AuthContext";
 import { auth } from "./config/firebase";
+import OnboardingPage from "./pages/OnboardingPage";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
       {
         index: true,
         Component: Feed,
+      },
+      {
+        path: "onboarding",
+        Component: OnboardingPage,
       },
     ],
   },

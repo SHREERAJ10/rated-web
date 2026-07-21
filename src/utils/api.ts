@@ -75,3 +75,18 @@ export const deleteRecord = async (user: User, route: string) => {
   }
   return parsedResponse;
 };
+
+export const uploadMedia = async (formData: FormData) => {
+  const response = await fetch(
+    "https://api.cloudinary.com/v1_1/medialibrary123/image/upload",
+    { 
+      method: "POST",
+      body: formData,
+    },
+  );
+  const parsedResponse = await response.json();
+  if (!response.ok) {
+    throw new Error(parsedResponse.error);
+  }
+  return parsedResponse;
+};
