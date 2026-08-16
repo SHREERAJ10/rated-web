@@ -37,7 +37,7 @@ export const createRecord = async (user: User, route: string, data: object) => {
     throw new Error(parsedResponse.error);
   }
 
-  return parsedResponse;
+  return parsedResponse.data;
 };
 
 export const updateRecord = async (user: User, route: string, data: object) => {
@@ -73,7 +73,7 @@ export const deleteRecord = async (user: User, route: string) => {
   if (!response.ok) {
     throw new Error(parsedResponse.error);
   }
-  return parsedResponse;
+  return parsedResponse.data;
 };
 
 export const uploadMedia = async (formData: FormData) => {
