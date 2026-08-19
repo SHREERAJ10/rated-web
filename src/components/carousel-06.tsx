@@ -11,7 +11,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-export default function CarouselWithPagination({ media }) {
+export default function CarouselWithPagination({ media, className="" }) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
@@ -30,8 +30,8 @@ export default function CarouselWithPagination({ media }) {
   }, [api]);
 
   return (
-    <div className="max-w-xs">
-      <Carousel className="w-full max-w-xs" setApi={setApi}>
+    <div>
+      <Carousel className={`w-full max-w-sm ${className}`} setApi={setApi}>
         <CarouselContent>
           {media.map((image) => (
             <CarouselItem key={image.id}>
