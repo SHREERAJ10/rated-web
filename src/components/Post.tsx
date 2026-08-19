@@ -1,8 +1,9 @@
 import { startTransition, useContext, useOptimistic, useState } from "react";
 import CarouselWithPagination from "./carousel-06";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart } from "lucide-react";
 import { createRecord, deleteRecord } from "@/utils/api";
 import { AuthContext } from "@/context/AuthContext";
+import { CommentSection } from "./CommentSection";
 
 function Post({ post }) {
   const { user } = useContext(AuthContext);
@@ -61,13 +62,13 @@ function Post({ post }) {
         <span className="flex justify-center gap-1">
           <button onClick={updateLike}>
             <Heart
-              className={`cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${optimisticIsPostLiked && "fill-black"}`}
+              className={`cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${optimisticIsPostLiked && "fill-red-500"}`}
             />
           </button>
           <span>{optimisticLikeCount}</span>
         </span>
-        <span className="flex justify-center gap-1">
-          <MessageCircle className="cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out" />
+        <span className="flex justify-center gap-1 w-full">
+          <CommentSection post={post} />
           <span>{post.comment.count}</span>
         </span>
       </div>
