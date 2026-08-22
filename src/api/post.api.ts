@@ -1,6 +1,11 @@
 import { createRecord, deleteRecord, getData } from "@/utils/api";
 import type { User } from "firebase/auth";
 
+enum PostAction {
+  Like = "LIKE",
+  Unlike = "Unlike",
+}
+
 export const getComments = async (user: User, postId: string) => {
   const comments = await getData(user, `/post/${postId}/comment`);
   return comments;
@@ -28,4 +33,9 @@ export const unlikePost = async (user: User, postId: string) => {
 export const getPost = async (user: User, postId: string) => {
   const post = await getData(user, `/post/${postId}`);
   return post;
+};
+
+export const fetchPosts = async (user: User) => {
+  const posts = await getData(user, "/post");
+  return posts;
 };
