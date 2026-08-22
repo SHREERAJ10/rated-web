@@ -1,20 +1,25 @@
 import { CreatePost } from "@/components/CreatePost";
 import { logout } from "../utils/AuthHandlers";
 import Post from "@/components/Post";
-import { useContext, useEffect, useState } from "react";
-import { getData } from "@/utils/api";
+import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPosts } from "@/api/post.api";
 
 function Feed() {
   const { user } = useContext(AuthContext);
-  const [posts, setPosts] = useState<object[] | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const posts = await getData(user, "/post");
-      setPosts(posts.items);
-    })();
-  }, []);
+  const {
+    data: posts,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["posts"],
+    queryFn: () => fetchPosts(user),
+  });
+
+  if (isLoading) return;
+  if (error) return <span>An error occured</span>;
 
   return (
     <>
@@ -34,9 +39,9 @@ function Feed() {
         <CreatePost />
       </div>
       <section className="flex flex-col items-center gap-y-6">
-        {posts?.length != 0 &&
-          posts?.map((post) => {
-            return <Post key={post.id} post={post}  />;
+        {posts?.items.length != 0 &&
+          posts?.items.map((post) => {
+            return <Post key={post.id} post={post} />;
           })}
       </section>
     </>

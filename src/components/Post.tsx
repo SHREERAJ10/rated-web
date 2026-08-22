@@ -5,9 +5,6 @@ import { Link, useLocation } from "react-router-dom";
 
 function Post({ post }) {
   const location = useLocation();
-  if (post.id === "0f219b4f-6585-4af1-99d8-6bd4719fe926") {
-    console.log(post);
-  }
 
   return (
     <>
@@ -26,11 +23,7 @@ function Post({ post }) {
         <CarouselWithPagination media={post.media} />
 
         <div className="flex justify-center gap-x-5">
-          <PostLike
-            isLikedByUser={post.isLikedByUser}
-            postId={post.id}
-            totalLikeCount={post.like.count}
-          />
+          <PostLike postId={post.id} />
           <span className="flex justify-center gap-1 w-full">
             <Link
               to={`/post/${post.id}`}

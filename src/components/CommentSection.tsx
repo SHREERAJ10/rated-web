@@ -1,17 +1,12 @@
 import CarouselWithPagination from "./carousel-06";
-import {
-  startTransition,
-  useContext,
-  useEffect,
-  useOptimistic,
-  useState,
-} from "react";
+import { startTransition, useContext, useOptimistic, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { getComments, getPost, postComment } from "@/api/post.api";
+import { fetchPosts, postComment } from "@/api/post.api";
 import Comment from "./Comment";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import PostLike from "./PostLike";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 interface FormInput {
   comment: string;
@@ -22,7 +17,17 @@ export function CommentSection() {
 
   const { postId } = useParams();
   const navigate = useNavigate();
-  const [post, setPost] = useState<[object] | null>(null);
+
+  const {
+    data: post,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["posts"],
+    queryFn: () => fetchPosts(user),
+    select: (data) => data.items.find((post) => post.id == postId),
+  });
+
   const [comments, setComments] = useState<[object] | null>(null);
   const [optimisticComments, setOptimisticComments] = useOptimistic(
     comments,
@@ -52,24 +57,8 @@ export function CommentSection() {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      document.body.style.overflow = "hidden";
-      (async () => {
-        const post = await getPost(user, postId);
-        const comments = await getComments(user, postId);
-        setPost(post);
-        setComments(comments.items);
-      })();
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [user]);
-
-  if (!post) {
-    return;
-  }
+  if (isLoading) return;
+  if (error) return <span>An error occured</span>;
 
   return (
     <div
@@ -108,11 +97,7 @@ export function CommentSection() {
           )}
           <section className="grow border border-red-500 flex flex-col justify-between items-start">
             <div>
-              <PostLike
-                postId={post.id}
-                isLikedByUser={post.isLikedByUser}
-                totalLikeCount={post.like.count}
-              />
+              <PostLike postId={post.id} />
             </div>
             <form
               className="w-full flex justify-between"
