@@ -1,12 +1,8 @@
 import { createRecord, deleteRecord, getData } from "@/utils/api";
 import type { User } from "firebase/auth";
 
-enum PostAction {
-  Like = "LIKE",
-  Unlike = "Unlike",
-}
-
-export const getComments = async (user: User, postId: string) => {
+export const fetchComments = async (user: User, postId: string) => {
+  console.log(`fetching comments: ${postId}`);
   const comments = await getData(user, `/post/${postId}/comment`);
   return comments;
 };

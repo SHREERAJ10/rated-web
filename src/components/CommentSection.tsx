@@ -1,12 +1,13 @@
 import CarouselWithPagination from "./carousel-06";
-import { startTransition, useContext, useOptimistic, useState } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { fetchPosts, postComment } from "@/api/post.api";
+import { fetchComments, fetchPosts, postComment } from "@/api/post.api";
 import Comment from "./Comment";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import PostLike from "./PostLike";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchUser } from "@/api/user.api";
 
 interface FormInput {
   comment: string;
@@ -14,6 +15,7 @@ interface FormInput {
 
 export function CommentSection() {
   const { user } = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
   const { postId } = useParams();
   const navigate = useNavigate();
@@ -28,37 +30,85 @@ export function CommentSection() {
     select: (data) => data.items.find((post) => post.id == postId),
   });
 
-  const [comments, setComments] = useState<[object] | null>(null);
-  const [optimisticComments, setOptimisticComments] = useOptimistic(
-    comments,
-    (currComments, newComment): [object] => {
-      return [newComment, ...currComments];
+  const { data: comments } = useQuery({
+    queryKey: ["comments"],
+    queryFn: () => fetchComments(user, postId),
+  });
+
+  const { data: currUser } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => fetchUser(user),
+  });
+
+  const addComment = useMutation({
+    mutationFn: async (newComment) => {
+      const comment = await postComment(user, postId, newComment);
+      console.log(comment);
+      return comment;
     },
-  );
+    onMutate: async (newComment: object) => {
+      await queryClient.cancelQueries({ queryKey: ["comments"] });
+      const previousComments = queryClient.getQueryData(["comments"]);
+
+      const optimisticComment = {
+        id: crypto.randomUUID(),
+        postId: postId,
+        comment: newComment.comment,
+        createdAt: new Date(),
+        commentor: {
+          id: currUser.id,
+          displayName: currUser.displayName,
+          username: currUser.username,
+          pfpUrl: currUser.pfpUrl,
+        },
+      };
+
+      queryClient.setQueryData(["comments"], (oldComments) => {
+        return {
+          ...oldComments,
+          items: [optimisticComment, ...oldComments.items],
+          totalCount: oldComments.totalCount + 1,
+        };
+      });
+
+      return { previousComments };
+    },
+    onError: (err, newComment, context) => {
+      console.log(err);
+      queryClient.setQueryData(["comments"], context.previousComments);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
   const { register, handleSubmit } = useForm();
 
   const onSubmit: SubmitHandler<FormInput> = async (data) => {
     try {
       if (user) {
-        const optimisticComment = {
-          id: crypto.randomUUID(),
-          postId: post.id,
-          comment: data.comment,
-          createdAt: new Date(),
-        };
-        startTransition(async () => {
-          setOptimisticComments(optimisticComment);
-          const comment = await postComment(user, post.id, data);
-          setComments((prev) => [comment, ...prev]);
-        });
+        addComment.mutate(data);
       }
     } catch (err) {
       console.log(err);
     }
   };
 
+  useEffect(() => {
+    window.document.body.style.overflow = "hidden";
+    return () => {
+      window.document.body.style.overflow = "";
+      queryClient.removeQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+    };
+  }, []);
+
   if (isLoading) return;
   if (error) return <span>An error occured</span>;
+  if (!post) {
+    return;
+  }
 
   return (
     <div
@@ -90,7 +140,7 @@ export function CommentSection() {
 
           {comments && (
             <section className="flex flex-col gap-y-2 border border-black h-[70%] overflow-y-auto scrollbar-none">
-              {optimisticComments.map((comment) => {
+              {comments.items.map((comment) => {
                 return <Comment key={comment.id} comment={comment} />;
               })}
             </section>
