@@ -9,10 +9,7 @@ interface PostLikeProps {
   className?: string;
 }
 
-function PostLike({
-  postId,
-  className = "",
-}: PostLikeProps) {
+function PostLike({ postId, className = "" }: PostLikeProps) {
   const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
@@ -29,7 +26,7 @@ function PostLike({
         : await likePost(user, postId);
     },
     onMutate: async () => {
-      await queryClient.cancelQueries(["posts"]);
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
 
       const previousPosts = queryClient.getQueryData(["posts"]);
 
@@ -55,15 +52,15 @@ function PostLike({
         });
       });
 
-      return { postBeforeUpdate };
+      return { previousPosts };
     },
 
-    onError: (err, newPost, context) => {
+    onError: (err, newComment, context) => {
       queryClient.setQueryData(["posts"], context?.previousPosts);
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries(["posts"]);
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
