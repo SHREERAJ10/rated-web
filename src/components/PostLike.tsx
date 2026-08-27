@@ -30,10 +30,6 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
 
       const previousPosts = queryClient.getQueryData(["posts"]);
 
-      const postBeforeUpdate = previousPosts.items.find(
-        (post) => post.id == postId,
-      );
-
       queryClient.setQueryData(["posts"], (posts) => {
         posts.items = posts.items.map((oldPost) => {
           if (oldPost.id == postId) {
@@ -42,7 +38,7 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
               isLikedByUser: !oldPost.isLikedByUser,
               like: {
                 count: oldPost.isLikedByUser
-                  ? oldPost.like.count - 1
+                  ? oldPost.like.count - 1  
                   : oldPost.like.count + 1,
               },
             };
