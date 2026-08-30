@@ -8,14 +8,13 @@ import { fetchPosts } from "@/api/post.api";
 
 function Feed() {
   const { user } = useContext(AuthContext);
-
   const {
     data: posts,
     error,
     isLoading,
   } = useQuery({
     queryKey: ["posts"],
-    queryFn: () => fetchPosts(user),
+    queryFn: async () => await fetchPosts(user),
   });
 
   if (isLoading) return;
