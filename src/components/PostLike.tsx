@@ -31,27 +31,31 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
       const previousPosts = queryClient.getQueryData(["posts"]);
 
       queryClient.setQueryData(["posts"], (posts) => {
-        posts.items = posts.items.map((oldPost) => {
-          if (oldPost.id == postId) {
-            return {
-              ...oldPost,
-              isLikedByUser: !oldPost.isLikedByUser,
-              like: {
-                count: oldPost.isLikedByUser
-                  ? oldPost.like.count - 1  
-                  : oldPost.like.count + 1,
-              },
-            };
-          } else {
-            return oldPost;
-          }
-        });
+        return {
+          ...posts,
+          items: posts.items.map((oldPost) => {
+            if (oldPost.id == postId) {
+              return {
+                ...oldPost,
+                isLikedByUser: !oldPost.isLikedByUser,
+                like: {
+                  count: oldPost.isLikedByUser
+                    ? oldPost.like.count - 1
+                    : oldPost.like.count + 1,
+                },
+              };
+            } else {
+              return oldPost;
+            }
+          }),
+        };
       });
 
       return { previousPosts };
     },
 
     onError: (err, newComment, context) => {
+      console.log(err);
       queryClient.setQueryData(["posts"], context?.previousPosts);
     },
 
