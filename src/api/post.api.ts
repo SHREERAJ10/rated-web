@@ -1,4 +1,4 @@
-import { createRecord, deleteRecord, getData } from "@/utils/api";
+import { createRecord, deleteRecord, getData, updateRecord } from "@/utils/api";
 import type { User } from "firebase/auth";
 
 export const fetchComments = async (user: User, postId: string) => {
@@ -34,4 +34,26 @@ export const getPost = async (user: User, postId: string) => {
 export const fetchPosts = async (user: User) => {
   const posts = await getData(user, "/post");
   return posts;
+};
+
+interface userRatingScore {
+  score: number;
+}
+
+export const ratePost = async (
+  user: User,
+  postId: string,
+  userRatingScore: userRatingScore,
+) => {
+  const ratingOfUser = await updateRecord(
+    user,
+    `/post/${postId}/rate`,
+    userRatingScore,
+  );
+  return ratingOfUser;
+};
+
+export const removeRating = async (user: User, postId: string) => {
+  const removedRating = await deleteRecord(user, `/post/${postId}/rate`);
+  return removedRating;
 };
