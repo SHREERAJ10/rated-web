@@ -2,7 +2,6 @@ import { createRecord, deleteRecord, getData, updateRecord } from "@/utils/api";
 import type { User } from "firebase/auth";
 
 export const fetchComments = async (user: User, postId: string) => {
-  console.log(`fetching comments: ${postId}`);
   const comments = await getData(user, `/post/${postId}/comment`);
   return comments;
 };
@@ -31,8 +30,17 @@ export const getPost = async (user: User, postId: string) => {
   return post;
 };
 
-export const fetchPosts = async (user: User) => {
-  const posts = await getData(user, "/post");
+interface Cursor {
+  id: string;
+  feedScore: number;
+}
+
+export const fetchPosts = async (user: User, pageParam?: Cursor) => {
+  let url = `/post`;
+  if (pageParam) {
+    url += `?cursor=${pageParam.id}&feedScore=${pageParam.feedScore}`;
+  }
+  const posts = await getData(user, url);
   return posts;
 };
 
