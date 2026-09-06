@@ -78,11 +78,15 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
       const postsBeforeMutation = queryClient.getQueryData(["posts"]);
 
       //optimistic update
-      queryClient.setQueryData(["posts"], (oldPosts) => {
+      queryClient.setQueryData(["posts"], (posts) => {
+        if (!posts) return posts;
         return {
-          ...oldPosts,
-          items: oldPosts.items.map((oldPost) => {
-            if (oldPost.id == postId) {
+          ...posts,
+          pages: posts.pages.map((page) => ({
+            ...page,
+            items: page.items.map((oldPost) => {
+              if (oldPost.id !== postId) return oldPost;
+
               return {
                 ...oldPost,
                 isRatedByUser: true,
@@ -95,10 +99,8 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
                   userRatingScore: postRating.score,
                 },
               };
-            } else {
-              return oldPost;
-            }
-          }),
+            }),
+          })),
         };
       });
 
@@ -118,33 +120,39 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
     mutationFn: async () => {
       await removeRating(user, postId);
     },
+
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
 
       const postsBeforeMutation = queryClient.getQueryData(["posts"]);
 
-      queryClient.setQueryData(["posts"], (oldPosts) => {
+      queryClient.setQueryData(["posts"], (posts) => {
+        if (!posts) return posts;
+
         return {
-          ...oldPosts,
-          items: oldPosts.items.map((oldPost) => {
-            if (oldPost.id == postId) {
-              return {
-                ...oldPost,
-                isRatedByUser: false,
-                ratingScore: {
-                  ...oldPost.ratingScore,
-                  count: oldPost.ratingScore.count - 1,
-                },
-              };
-            } else {
-              return oldPost;
-            }
-          }),
+          ...posts,
+          pages: posts.pages?.map((page) => ({
+            ...page,
+            items: page.items?.map((post) => {
+              if (post.id == postId) {
+                return {
+                  ...post,
+                  isRatedByUser: false,
+                  ratingScore: {
+                    ...post.ratingScore,
+                    count: Math.max(0, post.ratingScore.count - 1),
+                  },
+                };
+              }
+              return post;
+            }),
+          })),
         };
       });
 
       return { postsBeforeMutation };
     },
+
     onError: (err, postRating, context) => {
       console.log(err);
       queryClient.setQueryData(["posts"], context?.postsBeforeMutation);

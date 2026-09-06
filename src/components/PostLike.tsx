@@ -1,6 +1,10 @@
 import { fetchPosts, likePost, unlikePost } from "@/api/post.api";
 import { AuthContext } from "@/context/AuthContext";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { Heart } from "lucide-react";
 import { useContext } from "react";
 
@@ -13,10 +17,16 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
   const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
-  const { data: post } = useQuery({
+  const {
+    data: post,
+    error,
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: () => fetchPosts(user),
-    select: (data) => data.items.find((post) => post.id == postId),
+    queryFn: ({ pageParam }) => fetchPosts(user, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
+    select: (data) => data.pages.flatMap((page) => page.items).find((post) => post.id == postId),
   });
 
   const postLike = useMutation({
@@ -31,10 +41,15 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
       const previousPosts = queryClient.getQueryData(["posts"]);
 
       queryClient.setQueryData(["posts"], (posts) => {
+        if (!posts) return posts;
+
         return {
           ...posts,
-          items: posts.items.map((oldPost) => {
-            if (oldPost.id == postId) {
+          pages: posts.pages.map((page) => ({
+            ...page,
+            items: page.items.map((oldPost) => {
+              if (oldPost.id !== postId) return oldPost;
+
               return {
                 ...oldPost,
                 isLikedByUser: !oldPost.isLikedByUser,
@@ -44,10 +59,8 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
                     : oldPost.like.count + 1,
                 },
               };
-            } else {
-              return oldPost;
-            }
-          }),
+            }),
+          })),
         };
       });
 

@@ -1,24 +1,52 @@
 import { CreatePost } from "@/components/CreatePost";
 import { logout } from "../utils/AuthHandlers";
 import Post from "@/components/Post";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/api/post.api";
 
 function Feed() {
   const { user } = useContext(AuthContext);
+
+  const observerTarget = useRef(null);
+
   const {
     data: posts,
     error,
     isLoading,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: async () => await fetchPosts(user),
-  });
+    queryFn: ({ pageParam }) => fetchPosts(user, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
+    maxPages: 3,
+    select: (data) => data.pages.flatMap((page) => page.items),
+  }); 
+
+  useEffect(() => {
+    const target = observerTarget.current;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }); 
+
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) return;
-  if (error) return <span>An error occured</span>;
+  if (error) {
+    console.log(error);
+    return <span>An error occured</span>;
+  }
 
   return (
     <>
@@ -38,10 +66,14 @@ function Feed() {
         <CreatePost />
       </div>
       <section className="flex flex-col items-center gap-y-6">
-        {posts?.items.length != 0 &&
-          posts?.items.map((post) => {
+        {posts?.length != 0 &&
+          posts.map((post) => {
             return <Post key={post.id} post={post} />;
           })}
+        <div ref={observerTarget}>
+          {isFetchingNextPage && <span>Loading...</span>}
+          {!hasNextPage && <span>No more posts</span>}
+        </div>
       </section>
     </>
   );

@@ -6,7 +6,7 @@ import Comment from "./Comment";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import PostLike from "./PostLike";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchUser } from "@/api/user.api";
 
 interface FormInput {
@@ -22,12 +22,14 @@ export function CommentSection() {
 
   const {
     data: post,
-    isLoading,
     error,
-  } = useQuery({
+    isLoading,
+  } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: () => fetchPosts(user),
-    select: (data) => data.items.find((post) => post.id == postId),
+    queryFn: ({ pageParam }) => fetchPosts(user, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
+    select: (data) => data.pages.flatMap((page) => page.items).find((post) => post.id == postId),
   });
 
   const { data: comments } = useQuery({
@@ -43,11 +45,11 @@ export function CommentSection() {
   const addComment = useMutation({
     mutationFn: async (newComment) => {
       const comment = await postComment(user, postId, newComment);
-      console.log(comment);
       return comment;
     },
     onMutate: async (newComment: object) => {
       await queryClient.cancelQueries({ queryKey: ["comments"] });
+      
       const previousComments = queryClient.getQueryData(["comments"]);
 
       const optimisticComment = {
