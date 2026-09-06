@@ -23,7 +23,7 @@ export function CreatePost() {
   const [post, setPost] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const onSubmit = async (data) => {
+  const onSubmit:SubmitHandler<{ caption: string }> = async (data) => {
     let media = [];
     const limit = pLimit(5);
     const uploadMediaTasks = imagesToUpload?.map((imageFile) =>
@@ -36,7 +36,12 @@ export function CreatePost() {
 
     const postData = {
       caption: data.caption,
-      media: media.map((image) => image.secure_url),
+      media: media.map((image) => {
+        return {
+          publicId: image.public_id,
+          url: image.secure_url,
+        };
+      }),
     };
 
     const post = await createRecord(user, "/post", postData);
