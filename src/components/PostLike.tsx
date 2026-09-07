@@ -71,10 +71,6 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
       console.log(err);
       queryClient.setQueryData(["posts"], context?.previousPosts);
     },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-    },
   });
 
   return (

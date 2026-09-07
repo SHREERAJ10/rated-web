@@ -79,10 +79,6 @@ export function CommentSection() {
       console.log(err);
       queryClient.setQueryData(["comments"], context.previousComments);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-    },
   });
 
   const { register, handleSubmit } = useForm();

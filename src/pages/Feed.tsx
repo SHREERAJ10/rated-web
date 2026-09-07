@@ -24,8 +24,19 @@ function Feed() {
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
     maxPages: 3,
-    select: (data) => data.pages.flatMap((page) => page.items),
-  }); 
+    select: (data) => {
+      const uniquePostIds = new Set();
+      return data.pages
+        .flatMap((page) => page.items)
+        .filter((post) => {
+          if (!uniquePostIds.has(post.id)) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+    },
+  });
 
   useEffect(() => {
     const target = observerTarget.current;
@@ -33,7 +44,7 @@ function Feed() {
       if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
-    }); 
+    });
 
     if (target) observer.observe(target);
 

@@ -110,10 +110,6 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
       console.log(err);
       queryClient.setQueryData(["posts"], context?.postsBeforeMutation);
     },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-    },
   });
 
   const removeUserRating = useMutation({
@@ -156,10 +152,6 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
     onError: (err, postRating, context) => {
       console.log(err);
       queryClient.setQueryData(["posts"], context?.postsBeforeMutation);
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 
