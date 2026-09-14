@@ -1,9 +1,6 @@
 import { Star } from "lucide-react";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import RatingPicker from "./RatingPicker";
-import { useQuery } from "@tanstack/react-query";
-import { fetchPosts } from "@/api/post.api";
-import { AuthContext } from "@/context/AuthContext";
 
 interface PostRatingProps {
   postId: string;
@@ -17,21 +14,22 @@ function PostRating({
   userRatingScore,
 }: PostRatingProps) {
   const [showRatingOption, setShowRatingOption] = useState<boolean>(false);
-  const { user } = useContext(AuthContext);
 
   return (
     <div>
       <button
-        className="flex justify-center items-center gap-x-0.5 px-1 border-2 border-black/80 rounded-md"
+        className="flex justify-center items-center gap-x-1 px-2.5 py-1 border border-on-surface rounded-[8px] text-[12px] sm:text-[13px] font-medium text-on-surface hover:bg-surface-container-low transition-colors"
         onClick={() => setShowRatingOption(true)}
       >
-        <Star size={18} />
+        <Star
+          size={15}
+          strokeWidth={2}
+          className={isRatedByUser ? "fill-on-surface" : ""}
+        />
         {isRatedByUser ? (
-          <div>
-            <span>You Rated {userRatingScore}/10</span>
-          </div>
+          <span>You Rated {userRatingScore}/10</span>
         ) : (
-          <>Rate</>
+          <span>Rate</span>
         )}
       </button>
 

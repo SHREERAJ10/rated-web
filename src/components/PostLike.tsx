@@ -26,7 +26,10 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
     queryFn: ({ pageParam }) => fetchPosts(user, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
-    select: (data) => data.pages.flatMap((page) => page.items).find((post) => post.id == postId),
+    select: (data) =>
+      data.pages
+        .flatMap((page) => page.items)
+        .find((post) => post.id == postId),
   });
 
   const postLike = useMutation({
@@ -74,13 +77,18 @@ function PostLike({ postId, className = "" }: PostLikeProps) {
   });
 
   return (
-    <div className={`flex justify-center gap-1 ${className}`}>
-      <button onClick={() => postLike.mutate()}>
+    <div className={`flex justify-center items-center gap-1.5 ${className}`}>
+      <button onClick={() => postLike.mutate()} className="cursor-pointer">
         <Heart
-          className={`cursor-pointer hover:scale-105 transition-transform duration-200 ease-in-out ${post.isLikedByUser && "fill-red-500"}`}
+          className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 ease-in-out hover:scale-105 ${
+            post.isLikedByUser ? "fill-red-500 text-red-500" : "text-on-surface"
+          }`}
+          strokeWidth={1.75}
         />
       </button>
-      <span>{post.like.count}</span>
+      <span className="text-[14px] sm:text-[15px] text-on-surface">
+        {post.like.count}
+      </span>
     </div>
   );
 }
