@@ -1,13 +1,16 @@
 import CarouselWithPagination from "./carousel-06";
 import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { fetchComments, fetchPosts, postComment } from "@/api/post.api";
+import {
+  fetchComments,
+  fetchSinglePost,
+  postComment,
+} from "@/api/post.api";
 import Comment from "./Comment";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import PostLike from "./PostLike";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -40,7 +43,7 @@ export function CommentSection() {
   };
 
   const { data: comments } = useQuery({
-    queryKey: ["comments"],
+    queryKey: ["comments", postId],
     queryFn: () => fetchComments(user!, postId),
     enabled: !!user,
   });
@@ -48,21 +51,17 @@ export function CommentSection() {
   const {
     data: post,
     error,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["posts"],
-    queryFn: ({ pageParam }) => fetchPosts(user!, pageParam),
-    enabled: !!user,
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
-    select: (data) => {
-      console.log(data.pages.flatMap((page) => page.items));
-      return data.pages
+  } = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => fetchSinglePost(user!, postId),
+    initialData: () => {
+      const posts = queryClient.getQueryData(["posts"]);
+      return posts?.pages
         .flatMap((page) => page.items)
         .find((post) => post.id == postId);
     },
+    enabled: !!user,
   });
-  console.log(post);
 
   const { data: currUser } = useQuery({
     queryKey: ["user"],
@@ -70,15 +69,20 @@ export function CommentSection() {
     enabled: !!user,
   });
 
-  const addComment = useMutation({
+  const onComment = useMutation({
     mutationFn: async (newComment) => {
       const comment = await postComment(user, postId, newComment);
       return comment;
     },
-    onMutate: async (newComment: object) => {
-      await queryClient.cancelQueries({ queryKey: ["comments"] });
 
-      const previousComments = queryClient.getQueryData(["comments"]);
+    onMutate: async (newComment: object) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", postId] });
+      await queryClient.cancelQueries({ queryKey: ["post", postId] });
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+
+      const previousComments = queryClient.getQueryData(["comments", postId]);
+      const previousSinglePost = queryClient.getQueryData(["post", postId]);
+      const previousInfinitePost = queryClient.getQueryData(["posts"]);
 
       const optimisticComment = {
         id: crypto.randomUUID(),
@@ -93,7 +97,7 @@ export function CommentSection() {
         },
       };
 
-      queryClient.setQueryData(["comments"], (oldComments) => {
+      queryClient.setQueryData(["comments", postId], (oldComments) => {
         return {
           ...oldComments,
           items: [optimisticComment, ...oldComments.items],
@@ -101,11 +105,48 @@ export function CommentSection() {
         };
       });
 
-      return { previousComments };
+      //update single post
+      queryClient.setQueryData(["post", postId], (oldPost) => {
+        if (!oldPost) return oldPost;
+
+        return {
+          ...oldPost,
+          comment: {
+            count: oldPost.comment.count + 1,
+          },
+        };
+      });
+
+      //update infinite post
+      queryClient.setQueryData(["posts"], (oldPosts) => {
+        if (!oldPosts) return oldPosts;
+
+        return {
+          ...oldPosts,
+          pages: oldPosts.pages.map((page) => ({
+            ...page,
+            items: page.items.map((oldPost) => {
+              if (oldPost.id !== postId) return oldPost;
+
+              return {
+                ...oldPost,
+                comment: {
+                  count: oldPost.comment.count + 1,
+                },
+              };
+            }),
+          })),
+        };
+      });
+
+      return { previousComments, previousSinglePost, previousInfinitePost };
     },
-    onError: (err, newComment, context) => {
+
+    onError: (err, context) => {
       console.log(err);
-      queryClient.setQueryData(["comments"], context.previousComments);
+      queryClient.setQueryData(["comments", postId], context.previousComments);
+      queryClient.setQueryData(["post", postId], context.previousSinglePost);
+      queryClient.setQueryData(["posts"], context.previousInfinitePost);
     },
   });
 
@@ -115,7 +156,7 @@ export function CommentSection() {
     try {
       if (user) {
         if (data.comment.trim() !== "") {
-          addComment.mutate(data);
+          onComment.mutate(data);
         }
       }
     } catch (err) {
