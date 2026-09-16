@@ -1,22 +1,28 @@
+import { relativeTime } from "@/utils/relativeTime";
+
 function Comment({ comment }) {
   return (
-    <div className="flex gap-x-2.5 items-center">
-      <div className="flex gap-x-2 items-center">
-        <div className="w-9 h-9 rounded-full justify-center items-center">
-          <img
-            src={comment.commentor?.pfpUrl}
-            alt="pfp"
-            className="object-contain rounded-full"
-          />
-        </div>
-        <span className="font-semibold">{comment.commentor?.displayName}</span>
+    <div className="flex gap-x-2.5 items-start">
+      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+        <img
+          src={comment.commentor?.pfpUrl}
+          alt="pfp"
+          className="w-full h-full object-cover rounded-full"
+        />
       </div>
-      <div>
-        <p>{comment.comment}</p>
+      <div className="flex flex-col gap-y-1">
+        <p className="text-[14px] leading-normal text-on-surface">
+          <span className="font-semibold">
+            {comment.commentor?.displayName}
+          </span>{" "}
+          <span>{comment.comment}</span>
+        </p>
+        <span className="text-[12px] text-on-surface-variant">
+          {relativeTime(new Date(comment.createdAt).getTime())}
+        </span>
       </div>
     </div>
   );
 }
-
 
 export default Comment;
