@@ -32,16 +32,20 @@ export const getPost = async (user: User, postId: string) => {
 
 interface Cursor {
   id: string;
-  feedScore: number;
 }
 
 export const fetchPosts = async (user: User, pageParam?: Cursor) => {
   let url = `/post`;
   if (pageParam) {
-    url += `?cursor=${pageParam.id}&feedScore=${pageParam.feedScore}`;
+    url += `?cursor=${pageParam.id}`;
   }
   const posts = await getData(user, url);
   return posts;
+};
+
+export const fetchSinglePost = async (user: User, postId: string) => {
+  const post = await getData(user, `/post/${postId}`);
+  return post;
 };
 
 interface userRatingScore {
