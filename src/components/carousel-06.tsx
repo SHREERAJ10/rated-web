@@ -18,7 +18,11 @@ const MIN_ASPECT_RATIO = 9 / 19.5;
 // Used until the first image has loaded and reported its real ratio
 const DEFAULT_ASPECT_RATIO = 4 / 5;
 
-export default function CarouselWithPagination({ media, className = "" }) {
+export default function CarouselWithPagination({
+  media,
+  className = "",
+  fit = "cover",
+}) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
@@ -39,13 +43,12 @@ export default function CarouselWithPagination({ media, className = "" }) {
 
   const handleFirstImageLoad = (e) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
-    console.log(naturalWidth)
     if (!naturalWidth || !naturalHeight) return;
 
     const naturalRatio = naturalWidth / naturalHeight;
     const clampedRatio = Math.min(
       MAX_ASPECT_RATIO,
-      Math.max(MIN_ASPECT_RATIO, naturalRatio)
+      Math.max(MIN_ASPECT_RATIO, naturalRatio),
     );
     setAspectRatio(clampedRatio);
   };
@@ -53,20 +56,35 @@ export default function CarouselWithPagination({ media, className = "" }) {
   return (
     <div className="relative w-full">
       <Carousel className={`w-full ${className}`} setApi={setApi}>
-        <CarouselContent>
+        <CarouselContent
+          className={fit === "contain" ? "sm:h-[calc(100vh-3rem)]" : ""}
+        >
           {media.map((image, index) => (
-            <CarouselItem key={image.id}>
-              <div
-                className="relative w-full overflow-hidden rounded-[12px] bg-surface-container"
-                style={{ aspectRatio }}
-              >
-                <img
-                  alt="post media"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  src={image.mediaUrl}
-                  onLoad={index === 0 ? handleFirstImageLoad : undefined}
-                />
-              </div>
+            <CarouselItem
+              key={image.id}
+              className={fit === "contain" ? "sm:h-[calc(100vh-3rem)]" : ""}
+            >
+              {fit === "contain" ? (
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-[12px] bg-surface-container">
+                  <img
+                    alt="post media"
+                    className="max-w-full max-h-full object-contain"
+                    src={image.mediaUrl}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="relative w-full overflow-hidden rounded-[12px] bg-surface-container"
+                  style={{ aspectRatio }}
+                >
+                  <img
+                    alt="post media"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src={image.mediaUrl}
+                    onLoad={index === 0 ? handleFirstImageLoad : undefined}
+                  />
+                </div>
+              )}
             </CarouselItem>
           ))}
         </CarouselContent>
@@ -90,7 +108,7 @@ export default function CarouselWithPagination({ media, className = "" }) {
                   "h-1.5 w-1.5 rounded-full transition-colors",
                   current === index + 1
                     ? "bg-surface-container-lowest"
-                    : "bg-surface-container-lowest/50"
+                    : "bg-surface-container-lowest/50",
                 )}
                 key={index}
                 onClick={() => api?.scrollTo(index)}

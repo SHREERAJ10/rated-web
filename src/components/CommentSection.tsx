@@ -183,16 +183,16 @@ export function CommentSection() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 w-full h-full flex justify-center items-center z-50"
+      className="fixed inset-0 bg-black/30 w-full px-16 py-6 lg:py-0 h-full flex justify-center items-center z-50"
       onClick={(e) => {
         if (e.target == e.currentTarget) {
           navigate("/");
         }
       }}
     >
-      <section className="bg-surface-container-lowest overflow-hidden w-full h-full sm:h-[calc(100vh-3rem)] sm:min-w-[calc(100vw-8rem)] sm:rounded-[12px] grid grid-cols-1 md:grid-cols-2 items-stretch p-0 gap-0 font-primary">
+      <section className="bg-surface-container-lowest overflow-hidden w-full h-full sm:h-[calc(100vh-3rem)] sm:min-w-[calc(100vw-8rem)] rounded-[12px] grid grid-cols-1 md:grid-cols-2 items-stretch p-0 gap-0 font-primary">
         <div className="hidden md:flex bg-surface-container-high items-center justify-center h-full">
-          <CarouselWithPagination media={post.media} className="max-w-xl" />
+          <CarouselWithPagination media={post.media} className="max-w-xl" fit="contain" />
         </div>
 
         <section className="flex flex-col h-full min-h-0">
