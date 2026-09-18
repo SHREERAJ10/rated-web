@@ -1,16 +1,13 @@
 import CarouselWithPagination from "./carousel-06";
 import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import {
-  fetchComments,
-  fetchSinglePost,
-  postComment,
-} from "@/api/post.api";
+import { fetchComments, fetchSinglePost, postComment } from "@/api/post.api";
 import Comment from "./Comment";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import PostLike from "./PostLike";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -26,6 +23,7 @@ interface FormInput {
 export function CommentSection() {
   const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
+  const observerTarget = useRef(null);
 
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
@@ -42,16 +40,24 @@ export function CommentSection() {
     navigator.clipboard.writeText(window.location.href);
   };
 
-  const { data: comments } = useQuery({
+  const {
+    data: comments,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
     queryKey: ["comments", postId],
-    queryFn: () => fetchComments(user!, postId),
+    queryFn: ({ pageParam }) => fetchComments(user!, postId, pageParam),
+    initialPageParam: 0,
     enabled: !!user,
+    getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
+    maxPages: 3,
+    select: (data) => {
+      return data.pages.flatMap((page) => page.items);
+    },
   });
 
-  const {
-    data: post,
-    error,
-  } = useQuery({
+  const { data: post, error } = useQuery({
     queryKey: ["post", postId],
     queryFn: () => fetchSinglePost(user!, postId),
     initialData: () => {
@@ -98,14 +104,23 @@ export function CommentSection() {
       };
 
       queryClient.setQueryData(["comments", postId], (oldComments) => {
+        if (!oldComments) return oldComments;
+
+        const updatedComments = [...oldComments.pages];
+
+        if (updatedComments.length > 0) {
+          updatedComments[0] = {
+            ...updatedComments[0],
+            items: [optimisticComment, ...updatedComments[0].items],
+          };
+        }
         return {
           ...oldComments,
-          items: [optimisticComment, ...oldComments.items],
-          totalCount: oldComments.totalCount + 1,
+          pages:updatedComments,
         };
       });
 
-      //update single post
+      //update single post: comment count
       queryClient.setQueryData(["post", postId], (oldPost) => {
         if (!oldPost) return oldPost;
 
@@ -117,7 +132,7 @@ export function CommentSection() {
         };
       });
 
-      //update infinite post
+      //update infinite post: comment count
       queryClient.setQueryData(["posts"], (oldPosts) => {
         if (!oldPosts) return oldPosts;
 
@@ -173,6 +188,21 @@ export function CommentSection() {
     };
   }, []);
 
+  useEffect(() => {
+    const target = observerTarget.current;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
+
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
   // if (isLoading) return;
   if (error) {
     console.log(error);
@@ -192,7 +222,11 @@ export function CommentSection() {
     >
       <section className="bg-surface-container-lowest overflow-hidden w-full h-full sm:h-[calc(100vh-3rem)] sm:min-w-[calc(100vw-8rem)] rounded-[12px] grid grid-cols-1 md:grid-cols-2 items-stretch p-0 gap-0 font-primary">
         <div className="hidden md:flex bg-surface-container-high items-center justify-center h-full">
-          <CarouselWithPagination media={post.media} className="max-w-xl" fit="contain" />
+          <CarouselWithPagination
+            media={post.media}
+            className="max-w-xl"
+            fit="contain"
+          />
         </div>
 
         <section className="flex flex-col h-full min-h-0">
@@ -225,7 +259,7 @@ export function CommentSection() {
               />
             </div>
             <div className="flex flex-col gap-y-1">
-              <p className="text-[14px] leading-[1.5] text-on-surface">
+              <p className="text-[14px] leading-normal text-on-surface">
                 <span className="font-semibold">{post.author.displayName}</span>{" "}
                 <span>{post.caption}</span>
               </p>
@@ -238,9 +272,13 @@ export function CommentSection() {
           {/* Comments - scrollable, hidden scrollbar */}
           {comments && (
             <section className="flex flex-col gap-y-5 px-5 py-4 grow min-h-0 overflow-y-auto scrollbar-none">
-              {comments.items.map((comment) => (
+              {comments.map((comment) => (
                 <Comment key={comment.id} comment={comment} />
               ))}
+              <div ref={observerTarget} className="min-h-4">
+                {isFetchingNextPage && <span>Loading...</span>}
+                {!hasNextPage && <span>No more comments</span>}
+              </div>
             </section>
           )}
 
