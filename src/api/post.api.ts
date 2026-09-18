@@ -1,8 +1,12 @@
 import { createRecord, deleteRecord, getData, updateRecord } from "@/utils/api";
 import type { User } from "firebase/auth";
 
-export const fetchComments = async (user: User, postId: string) => {
-  const comments = await getData(user, `/post/${postId}/comment`);
+export const fetchComments = async (user: User, postId: string, pageParam?: Cursor) => {
+  let url = `/post/${postId}/comment`;
+  if (pageParam) {
+    url += `?cursor=${pageParam.id}`;
+  }
+  const comments = await getData(user, url);
   return comments;
 };
 
