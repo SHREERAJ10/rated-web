@@ -1,8 +1,5 @@
 import {
-  BrowserRouter,
-  createBrowserRouter,
   Route,
-  RouterProvider,
   Routes,
   useLocation,
 } from "react-router-dom";
@@ -16,42 +13,15 @@ import { AuthContext } from "./context/AuthContext";
 import { auth } from "./config/firebase";
 import OnboardingPage from "./pages/OnboardingPage";
 import { CommentSection } from "./components/CommentSection";
+import NotificationPage from "./pages/NotificationPage";
 
-// const router = createBrowserRouter([
-//   {
-//     path: "/",
-//     Component: ProtectedRoute,
-//     children: [
-//       {
-//         index: true,
-//         Component: Feed,
-//       },
-//       {
-//         path: "post/:postId",
-//         Component: CommentSection,
-//       },
-//       {
-//         path: "onboarding",
-//         Component: OnboardingPage,
-//       },
-//     ],
-//   },
-//   {
-//     path: "login",
-//     Component: Login,
-//   },
-//   {
-//     path: "register",
-//     Component: Register,
-//   },
-// ]);
 
 function App() {
   const location = useLocation();
   const state = location.state || null;
   const backgroundLocation = state?.backgroundLocation || null;
 
-  const { setUser } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -71,6 +41,7 @@ function App() {
           <Route index element={<Feed />} />
           <Route path="post/:postId" element={<CommentSection />} />
           <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="notifications" element={<NotificationPage />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
