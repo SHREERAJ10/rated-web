@@ -1,8 +1,9 @@
 import { useContext, useEffect } from "react";
 import Login from "./Auth/Login";
 import { AuthContext } from "../context/AuthContext";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getData } from "../utils/api";
+import Layout from "@/components/Layout";
 
 interface OnboardingStatusType {
   userOnboard: boolean;
@@ -32,9 +33,7 @@ function ProtectedRoute() {
 
   return (
     <>
-      <main>
-        <Outlet />
-      </main>
+      <Layout />
     </>
   );
 }
