@@ -73,3 +73,13 @@ export const removeRating = async (user: User, postId: string) => {
   const removedRating = await deleteRecord(user, `/post/${postId}/rate`);
   return removedRating;
 };
+
+export const fetchNotifications = async (user: User, pageParam?: Cursor) => {
+  let url = `/user/notification`;
+  if (pageParam) {
+    url += `?cursor=${pageParam.id}`;
+  }
+  const notifications = await getData(user, url);
+  console.log("here");
+  return notifications;
+};
