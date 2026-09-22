@@ -80,10 +80,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           Authorization: `Bearer ${accessToken}`,
         },
         onmessage: (event) => {
-          const data: { isNotificationUnread: boolean } = JSON.parse(
-            event.data,
-          );
-          setHasNewNotifications(data.isNotificationUnread);
+          console.log(event.data);
+          const data: { isNotificationRead: boolean } = JSON.parse(event.data);
+          setHasNewNotifications(!data.isNotificationRead);
         },
         onerror: (error) => {
           console.log(error);

@@ -1,4 +1,4 @@
-import { fetchNotifications } from "@/api/post.api";
+import { fetchNotifications, updateNotificationStatus } from "@/api/post.api";
 import NotificationItem from "@/components/NotificationItem";
 import { AuthContext } from "@/context/AuthContext";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -54,6 +54,10 @@ export default function NotificationPage() {
       if (target) observer.unobserve(target);
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    (async () => await updateNotificationStatus(user))();
+  }, [user]);
 
   if (isLoading) return <span>Loading...</span>;
 
