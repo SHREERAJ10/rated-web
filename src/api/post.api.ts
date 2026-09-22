@@ -1,7 +1,12 @@
 import { createRecord, deleteRecord, getData, updateRecord } from "@/utils/api";
 import type { User } from "firebase/auth";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-export const fetchComments = async (user: User, postId: string, pageParam?: Cursor) => {
+export const fetchComments = async (
+  user: User,
+  postId: string,
+  pageParam?: Cursor,
+) => {
   let url = `/post/${postId}/comment`;
   if (pageParam) {
     url += `?cursor=${pageParam.id}`;
@@ -80,6 +85,9 @@ export const fetchNotifications = async (user: User, pageParam?: Cursor) => {
     url += `?cursor=${pageParam.id}`;
   }
   const notifications = await getData(user, url);
-  console.log("here");
   return notifications;
+};
+
+export const updateNotificationStatus = async (user: User) => {
+  await updateRecord(user, `/user/notification/status`, {});
 };
