@@ -14,6 +14,7 @@ import { auth } from "./config/firebase";
 import OnboardingPage from "./pages/OnboardingPage";
 import { CommentSection } from "./components/CommentSection";
 import NotificationPage from "./pages/NotificationPage";
+import UserSearch from "./pages/UserSearch";
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
           <Route path="post/:postId" element={<CommentSection />} />
           <Route path="onboarding" element={<OnboardingPage />} />
           <Route path="notifications" element={<NotificationPage />} />
+          <Route path="search" element={<UserSearch />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
