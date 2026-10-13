@@ -27,6 +27,8 @@ function Login() {
     password: "",
   });
 
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const navigate = useNavigate();
 
   const { user } = useContext(AuthContext);
@@ -46,6 +48,7 @@ function Login() {
         </div>
         <form
           onSubmit={async (e) => {
+            setIsLoggingIn(true);
             e.preventDefault();
             try {
               await handleLogin(loginData.email, loginData.password);
@@ -53,6 +56,7 @@ function Login() {
             } catch (err) {
               console.log(err);
             }
+            setIsLoggingIn(false);
           }}
         >
           <div className="flex flex-col gap-9">
@@ -83,7 +87,8 @@ function Login() {
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-[#272727] text-semibold text-xl w-full text-[#D9D9D9] rounded-xl cursor-pointer hover:brightness-110 transition-all duration-150 ease-in-out"
+              className="px-6 py-3 bg-[#272727] text-semibold text-xl w-full text-[#D9D9D9] rounded-xl cursor-pointer hover:brightness-110 transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:brightness-90"
+              disabled={isLoggingIn}
             >
               Login
             </button>

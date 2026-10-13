@@ -27,6 +27,7 @@ function Register() {
     email: "",
     password: "",
   });
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const navigate = useNavigate();
 
@@ -42,18 +43,20 @@ function Register() {
     <div className="w-full h-screen flex items-center justify-center">
       <div className="w-[85%] max-w-123.75 border border-[#BEBEBE] rounded-2xl bg-[#FAFAFA] px-6 pt-5 pb-7 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold">Register,</h1>
+          <h1 className="text-3xl font-semibold">Register</h1>
           <span className="text-xl">Create your new account</span>
         </div>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            setIsSigningUp(true);
             try {
               await handleSignUp(signUpData.email, signUpData.password);
               navigate("/onboarding");
             } catch (err) {
               console.log(err);
             }
+            setIsSigningUp(false);
           }}
         >
           <div className="flex flex-col gap-9">
@@ -84,7 +87,8 @@ function Register() {
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-[#272727] text-semibold text-xl w-full text-[#D9D9D9] rounded-xl cursor-pointer hover:brightness-110 transition-all duration-150 ease-in-out"
+              className="px-6 py-3 bg-[#272727] text-semibold text-xl w-full text-[#D9D9D9] rounded-xl cursor-pointer hover:brightness-110 transition-all duration-150 ease-in-out disabled:brightness-90 disabled:cursor-not-allowed"
+              disabled={isSigningUp}
             >
               Sign Up
             </button>
