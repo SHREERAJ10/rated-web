@@ -6,8 +6,26 @@ export const fetchUser = async (user: User) => {
   return userData;
 };
 
+export const fetchUserByUsername = async (user: User, username: string) => {
+  const userData = await getData(user, `/user/${username}`);
+  return userData;
+}
+
+interface Cursor {
+  id: string;
+}
 
 export const fetchUsers = async (user:User, query: string, page: number) => {
   const userData = await getData(user, `/user/search?searchQuery=${query}&page=${page}`);
   return userData;
 }
+
+export const fetchUserPosts = async (user: User, username: string, pageParam?: Cursor) => {
+  console.log("testL " + username);
+  let url = `/user/${username}/posts`;
+  if (pageParam) {
+    url += `?cursor=${pageParam.id}`;
+  }
+  const posts = await getData(user, url);
+  return posts;
+};
