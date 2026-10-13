@@ -3,7 +3,8 @@ import { NavLink } from "react-router-dom";
 import {
   Bell,
   Home,
-  MoreHorizontal,
+  LogOut,
+  Plus,
   Search,
   User2,
   type LucideIcon,
@@ -26,9 +27,10 @@ import type { User } from "firebase/auth";
 import { AuthContext } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUser } from "@/api/user.api";
+import { logout } from "@/utils/AuthHandlers";
 
 // Icon + new-notification dot. Used by desktop and mobile nav.
-function NavIcon({
+export function NavIcon({
   icon: Icon,
   showDot,
 }: {
@@ -61,11 +63,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   });
 
   const navItems = [
-  { title: "Home", url: "/", icon: Home },
-  { title: "Search", url: "/search", icon: Search },
-  { title: "Notifications", url: "/notifications", icon: Bell, hasDot: true },
-  { title: "Profile", url: `/${currUser?.username}`, icon: User2 },
-];
+    { title: "Home", url: "/", icon: Home },
+    { title: "Search", url: "/search", icon: Search },
+    { title: "Notifications", url: "/notifications", icon: Bell, hasDot: true },
+    { title: "Profile", url: `/${currUser?.username}`, icon: User2 },
+  ];
 
   React.useEffect(() => {
     const hasNotifications = async (
@@ -114,28 +116,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   Rated
                 </span>
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-[#666666]/70">
-                  Creative curation
+                  Rate Stuff... Ig.
                 </span>
               </div>
             )}
             <SidebarTrigger className="text-[#666666]" />
           </SidebarHeader>
 
-          <SidebarContent className="px-3 pt-6">
+          <SidebarContent className="px-3 pt-6 group-data-[collapsible=icon]:px-2">
             <SidebarMenu className="gap-2">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    className="h-11 gap-4 rounded-xl px-3 text-base hover:bg-surface-warm"
-                  >
+                  <SidebarMenuButton className="h-11 w-full gap-4 rounded-xl p-0! text-base hover:bg-surface-warm group-data-[collapsible=icon]:p-0!">
                     <NavLink
                       to={item.url}
                       end
                       className={({ isActive }) => {
                         const active = isActive && item.url !== "#";
-                        return `flex items-center gap-x-4 w-full py-4 ${linkColor(active)} ${
+                        return `flex h-full w-full items-center gap-x-4 rounded-xl px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 ${linkColor(active)} ${
                           active ? "bg-surface-warm font-medium" : ""
                         }`;
                       }}
@@ -144,41 +142,50 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         icon={item.icon}
                         showDot={item.hasDot && hasNewNotifications}
                       />
-                      <span>{item.title}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">
+                        {item.title}
+                      </span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <CreatePost
+                  dialogTrigger={
+                    <SidebarMenuButton className="cursor-pointer flex h-11 w-full gap-4 rounded-xl px-2.5 text-base hover:bg-surface-warm group-data-[collapsible=icon]:p-2! group-data-[collapsible=icon]:justify-center">
+                      <div className="w-full flex h-full items-center gap-x-4 rounded-full text-[#666666]">
+                        <NavIcon icon={Plus} showDot={false} />
+                        <span className="group-data-[collapsible=icon]:hidden">
+                          Create Post
+                        </span>
+                      </div>
+                    </SidebarMenuButton>
+                  }
+                />
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="gap-4 border-t border-border-subtle p-4">
-            {!collapsed && <CreatePost />}
-
-            <div
-              className={`flex items-center gap-3 ${
-                collapsed ? "justify-center" : "px-2"
-              }`}
-            >
-              <img
-                src={currUser?.pfpUrl}
-                alt={currUser?.displayName}
-                className="size-8 shrink-0 rounded-full object-cover"
-              />
-              {!collapsed && (
-                <>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-[#1A1A1A]">
-                      {currUser?.displayName}
-                    </p>
-                    <p className="truncate text-[13px] text-[#666666]/70">
-                      @{currUser?.username}
-                    </p>
-                  </div>
-                  <MoreHorizontal className="size-4 shrink-0 text-[#666666]" />
-                </>
-              )}
-            </div>
+          <SidebarFooter className="gap-4 border-t border-border-subtle p-4 group-data-[collapsible=icon]:p-2 ">
+            <SidebarMenu className="gap-2">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="flex items-center px-3 h-11 w-full gap-4 rounded-xl text-base hover:bg-surface-warm group-data-[collapsible=icon]:p-1.5! text-[#666666]"
+                  onClick={async () => {
+                    try {
+                      await logout();
+                    } catch (err) {
+                      console.log(err);
+                    }
+                  }}
+                >
+                  <NavIcon icon={LogOut} showDot={false} />
+                  <span className="group-data-[collapsible=icon]:hidden">
+                    Logout
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
       </div>
@@ -187,7 +194,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <section className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-x-6 border-t border-border-subtle bg-[#FDFDFB]/80 px-4 py-2 backdrop-blur-[20px] md:hidden">
         {navItems.map((item, i) => (
           <React.Fragment key={item.title}>
-            {i === 2 && <CreatePost view="mobile" />}
+            {i === 2 && (
+              <CreatePost
+                dialogTrigger={
+                  <button className="flex items-center">
+                    <NavIcon icon={Plus} showDot={false} />
+                  </button>
+                }
+              />
+            )}
             <NavLink
               to={item.url}
               end

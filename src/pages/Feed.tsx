@@ -1,4 +1,3 @@
-import { CreatePost } from "@/components/CreatePost";
 import { logout } from "../utils/AuthHandlers";
 import Post from "@/components/Post";
 import { useContext, useEffect, useRef } from "react";
@@ -12,7 +11,7 @@ function Feed() {
   const observerTarget = useRef(null);
 
   const {
-    data: posts,
+    data:posts,
     error,
     isLoading,
     fetchNextPage,
@@ -20,19 +19,20 @@ function Feed() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: ({ pageParam }) => fetchPosts(user, pageParam),
+    queryFn: ({ pageParam }) => fetchPosts(user!, pageParam),
+    enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
-    maxPages: 3,
     select: (data) => {
       const uniquePostIds = new Set();
       return data.pages
         .flatMap((page) => page.items)
         .filter((post) => {
-          if (!uniquePostIds.has(post.id)) {
-            return true;
-          } else {
+          if (uniquePostIds.has(post.id)) {
             return false;
+          } else {
+            uniquePostIds.add(post.id);
+            return true;
           }
         });
     },
@@ -50,38 +50,24 @@ function Feed() {
 
     return () => {
       if (target) observer.unobserve(target);
+      observer.disconnect();
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) return;
   if (error) {
     console.log(error);
-    return <span>An error occured</span>;
+    return <span>An error occured shit</span>;
   }
 
   return (
     <>
-      <div className="flex justify-between p-8">
-        <button
-          className="cursor-pointer"
-          onClick={async () => {
-            try {
-              await logout();
-            } catch (err) {
-              console.log(err);
-            }
-          }}
-        >
-          Logout
-        </button>
-        <CreatePost />
-      </div>
-      <section className="flex flex-col items-center gap-y-6">
+      <section className="flex flex-col items-center gap-y-6 pt-12 pb-6">
         {posts?.length != 0 &&
           posts.map((post) => {
             return <Post key={post.id} post={post} />;
           })}
-        <div ref={observerTarget}>
+        <div ref={observerTarget} className="min-h-4">
           {isFetchingNextPage && <span>Loading...</span>}
           {!hasNextPage && <span>No more posts</span>}
         </div>

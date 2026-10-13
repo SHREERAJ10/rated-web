@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { fetchUsers } from "@/api/user.api";
 import { AuthContext } from "@/context/AuthContext";
+import { NavLink } from "react-router-dom";
 
 export type User = {
   id: string;
@@ -48,13 +49,12 @@ export default function UserSearch() {
 
   return (
     <main className="min-h-screen bg-surface font-sans text-on-surface">
-      <div className="mx-auto w-full max-w-216 px-5 pb-16 pt-12 md:px-16 md:pt-20">
-        {/* Header */}
-        <header className="border-b border-border-subtle pb-6 md:pb-8">
-          <h1 className="text-headline-lg-mobile font-medium text-on-surface md:text-headline-lg">
-            Search
-          </h1>
-        </header>
+      <div className="mx-auto w-full max-w-216 px-5 pb-16 pt-12 md:px-16">
+        <section className="flex items-start justify-between border-b border-border-subtle pb-5">
+          <h1 className="text-2xl font-medium tracking-[-0.01em] md:text-[32px] md:leading-[1.2]">
+              Search Users
+            </h1>
+        </section>
 
         {/* Search input */}
         <div className="mt-6 flex items-center gap-3 rounded-md border border-border-subtle bg-surface-container-lowest px-4 py-4 transition-colors focus-within:border-primary md:mt-8 md:px-5">
@@ -113,8 +113,8 @@ export default function UserSearch() {
                   key={user.id}
                   className="border-b border-border-subtle last:border-b-0"
                 >
-                  <a
-                    href={`/${user.username}`}
+                  <NavLink
+                    to={`/${user.username}`}
                     className="group flex items-center gap-4 px-4 py-5 transition-colors hover:bg-surface-container-low md:gap-5 md:px-8 md:py-6"
                   >
                     <img
@@ -135,7 +135,7 @@ export default function UserSearch() {
                       className="h-5 w-5 shrink-0 text-outline-variant transition-all group-hover:translate-x-0.5 group-hover:text-on-surface"
                       strokeWidth={1.5}
                     />
-                  </a>
+                  </NavLink>
                 </li>
               ))}
             </ul>

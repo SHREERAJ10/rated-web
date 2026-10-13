@@ -52,6 +52,7 @@ export default function NotificationPage() {
 
     return () => {
       if (target) observer.unobserve(target);
+      observer.disconnect();
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
@@ -65,17 +66,12 @@ export default function NotificationPage() {
     <section className="min-h-screen bg-surface-warm px-5 py-8 font-primary text-[#1A1A1A] md:px-16 md:py-12">
       <div className="mx-auto max-w-3xl">
         <section className="flex items-start justify-between border-b border-border-subtle pb-5">
-          <div>
             <h1 className="text-2xl font-medium tracking-[-0.01em] md:text-[32px] md:leading-[1.2]">
               Notifications
             </h1>
             <p className="mt-1 text-sm text-[#666666]">
               Recent activity on your posts
             </p>
-          </div>
-          <span className="rounded-full border border-border-subtle bg-surface-warm px-3 py-1 text-[13px] font-medium tracking-[0.03em] text-[#666666]">
-            Activity
-          </span>
         </section>
 
         <div className="mt-8 divide-y divide-border-subtle overflow-hidden rounded-xl border border-border-subtle bg-white">

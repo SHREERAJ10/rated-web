@@ -32,7 +32,6 @@ function UserProfile() {
     enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
-    maxPages: 3,
     select: (data) => {
       return data.pages.flatMap((page) => page.items);
     },
@@ -50,6 +49,7 @@ function UserProfile() {
 
     return () => {
       if (target) observer.unobserve(target);
+      observer.disconnect();
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 

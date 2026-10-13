@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-query";
 import { fetchUser } from "@/api/user.api";
 import { relativeTime } from "@/utils/relativeTime";
-import { MessageCircle, AlertTriangle, Share2 } from "lucide-react";
+import { MessageCircle, Share2 } from "lucide-react";
 
 interface FormInput {
   comment: string;
@@ -51,7 +51,6 @@ export function CommentSection() {
     initialPageParam: 0,
     enabled: !!user,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
-    maxPages: 3,
     select: (data) => {
       return data.pages.flatMap((page) => page.items);
     },
@@ -200,6 +199,7 @@ export function CommentSection() {
 
     return () => {
       if (target) observer.unobserve(target);
+      observer.disconnect();
     };
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
@@ -216,7 +216,7 @@ export function CommentSection() {
       className="fixed inset-0 bg-black/30 w-full px-16 py-6 lg:py-0 h-full flex justify-center items-center z-50"
       onClick={(e) => {
         if (e.target == e.currentTarget) {
-          navigate("/");
+          navigate(-1);
         }
       }}
     >
@@ -294,10 +294,6 @@ export function CommentSection() {
               className="w-5 h-5 text-on-surface cursor-pointer"
               strokeWidth={1.75}
               onClick={handleShare}
-            />
-            <AlertTriangle
-              className="w-5 h-5 text-on-surface cursor-pointer ml-auto"
-              strokeWidth={1.75}
             />
           </section>
 
