@@ -1,6 +1,10 @@
 import { createRecord, deleteRecord, getData, updateRecord } from "@/utils/api";
 import type { User } from "firebase/auth";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
+
+export const createPost = async (user: User, postData: object) => {
+  const post = await createRecord(user, "/post", postData);
+  return post;
+}
 
 export const fetchComments = async (
   user: User,
@@ -44,6 +48,7 @@ interface Cursor {
 }
 
 export const fetchPosts = async (user: User, pageParam?: Cursor) => {
+  console.log(pageParam)
   let url = `/post`;
   if (pageParam) {
     url += `?cursor=${pageParam.id}`;

@@ -8,22 +8,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pattern } from "./examples/c-file-upload-4";
+import { UploadModal } from "./UploadModal";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useContext, useState } from "react";
 import uploadImage from "@/utils/uploadImage";
 import { AuthContext } from "@/context/AuthContext";
 import pLimit from "p-limit";
-import { createRecord } from "@/utils/api";
+import { Plus } from "lucide-react";
+import { createPost } from "@/api/post.api";
 
-export function CreatePost() {
+export function CreatePost({
+  dialogTrigger,
+}: {
+  dialogTrigger: React.ReactElement;
+}) {
   const { user } = useContext(AuthContext);
   const [imagesToUpload, setImagesToUpload] = useState<File[] | null>(null);
   const { register, handleSubmit } = useForm();
   const [post, setPost] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const onSubmit:SubmitHandler<{ caption: string }> = async (data) => {
+  const onSubmit: SubmitHandler<{ caption: string }> = async (data) => {
     let media = [];
     const limit = pLimit(5);
     const uploadMediaTasks = imagesToUpload?.map((imageFile) =>
@@ -44,7 +49,7 @@ export function CreatePost() {
       }),
     };
 
-    const post = await createRecord(user, "/post", postData);
+    const post = await createPost(user, postData);
     setPost(post);
     setIsDialogOpen(false);
   };
@@ -52,9 +57,7 @@ export function CreatePost() {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <form onSubmit={handleSubmit(onSubmit)} id="post-dialog">
-        <DialogTrigger
-          render={<Button variant="outline">Create Post</Button>}
-        />
+        <DialogTrigger className="w-full" render={dialogTrigger} />
 
         <DialogContent className="sm:max-w-sm md:max-w-md md:min-h-[80%] max-h-[90%]">
           <DialogHeader className="mb-2">
@@ -70,7 +73,7 @@ export function CreatePost() {
             ></textarea>
           </div>
           <div className="-mx-4 no-scrollbar max-h-[50vh] overflow-y-auto px-4">
-            <Pattern setImagesToUpload={setImagesToUpload} />
+            <UploadModal setImagesToUpload={setImagesToUpload} />
           </div>
 
           <DialogFooter>
