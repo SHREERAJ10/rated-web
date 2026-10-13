@@ -27,13 +27,6 @@ import { AuthContext } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUser } from "@/api/user.api";
 
-const navItems = [
-  { title: "Home", url: "/", icon: Home },
-  { title: "Search", url: "/search", icon: Search },
-  { title: "Notifications", url: "/notifications", icon: Bell, hasDot: true },
-  { title: "Profile", url: "#", icon: User2 },
-];
-
 // Icon + new-notification dot. Used by desktop and mobile nav.
 function NavIcon({
   icon: Icon,
@@ -66,6 +59,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     queryFn: () => fetchUser(user!),
     enabled: !!user,
   });
+
+  const navItems = [
+  { title: "Home", url: "/", icon: Home },
+  { title: "Search", url: "/search", icon: Search },
+  { title: "Notifications", url: "/notifications", icon: Bell, hasDot: true },
+  { title: "Profile", url: `/${currUser?.username}`, icon: User2 },
+];
 
   React.useEffect(() => {
     const hasNotifications = async (

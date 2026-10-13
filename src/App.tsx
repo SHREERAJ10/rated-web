@@ -15,6 +15,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import { CommentSection } from "./components/CommentSection";
 import NotificationPage from "./pages/NotificationPage";
 import UserSearch from "./pages/UserSearch";
+import UserProfile from "./pages/UserProfile";
 
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <Route path="onboarding" element={<OnboardingPage />} />
           <Route path="notifications" element={<NotificationPage />} />
           <Route path="search" element={<UserSearch />} />
+          <Route path=":username" element={<UserProfile />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
