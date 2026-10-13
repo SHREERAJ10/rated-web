@@ -36,7 +36,7 @@ interface GalleryUploadProps {
   onFilesChange?: (files: FileWithPreview[]) => void;
 }
 
-export function Pattern({
+export function UploadModal({
   maxFiles = 10,
   maxSize = 5 * 1024 * 1024, // 5MB
   accept = "image/*",
