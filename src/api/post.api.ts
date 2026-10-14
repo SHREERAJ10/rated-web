@@ -4,7 +4,7 @@ import type { User } from "firebase/auth";
 export const createPost = async (user: User, postData: object) => {
   const post = await createRecord(user, "/post", postData);
   return post;
-}
+};
 
 export const fetchComments = async (
   user: User,
@@ -48,7 +48,6 @@ interface Cursor {
 }
 
 export const fetchPosts = async (user: User, pageParam?: Cursor) => {
-  console.log(pageParam)
   let url = `/post`;
   if (pageParam) {
     url += `?cursor=${pageParam.id}`;

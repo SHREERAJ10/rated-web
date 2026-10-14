@@ -21,7 +21,6 @@ export const fetchUsers = async (user:User, query: string, page: number) => {
 }
 
 export const fetchUserPosts = async (user: User, username: string, pageParam?: Cursor) => {
-  console.log("testL " + username);
   let url = `/user/${username}/posts`;
   if (pageParam) {
     url += `?cursor=${pageParam.id}`;

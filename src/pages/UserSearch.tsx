@@ -37,7 +37,7 @@ export default function UserSearch() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const response:SearchResponse = await fetchUsers(user, debouncedQuery, page);
+      const response:SearchResponse = await fetchUsers(user!, debouncedQuery, page);
       setUsers(response.items);
       setHasMore(response.hasMore);
       setLoading(false);
@@ -142,7 +142,6 @@ export default function UserSearch() {
           )}
         </section>
 
-        {/* Pagination */}
         <nav
           aria-label="Pagination"
           className="mt-8 flex items-center justify-between gap-4 md:mt-10"

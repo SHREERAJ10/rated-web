@@ -19,6 +19,7 @@ import { PostSchema, type PostInput } from "@/schemas/postSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { User } from "firebase/auth";
 
 export function CreatePost({
   dialogTrigger,
@@ -41,7 +42,7 @@ export function CreatePost({
 
   const onSubmit: SubmitHandler<{ caption: string }> = async (data) => {
     try {
-      await createPost(user, data);
+      await createPost(user as User, data);
       toast.success("Post created successfully");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
     } catch {
@@ -58,7 +59,7 @@ export function CreatePost({
       let media = [];
       const limit = pLimit(5);
       const uploadMediaTasks = imagesToUpload?.map((imageFile) =>
-        limit(() => uploadImage(user, imageFile)),
+        limit(() => uploadImage(user as User, imageFile)),
       );
       if (uploadMediaTasks) {
         media = await Promise.all(uploadMediaTasks);
@@ -73,10 +74,9 @@ export function CreatePost({
         }),
       );
       handleSubmit(onSubmit)(e);
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error("Something went wrong!");
     } finally {
-      console.log("here");
       setIsUploading(false);
     }
   };

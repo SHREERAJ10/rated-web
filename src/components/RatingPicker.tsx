@@ -107,7 +107,6 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
       return { postsBeforeMutation };
     },
     onError: (err, postRating, context) => {
-      console.log(err);
       queryClient.setQueryData(["posts"], context?.postsBeforeMutation);
     },
   });
@@ -150,7 +149,6 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
     },
 
     onError: (err, postRating, context) => {
-      console.log(err);
       queryClient.setQueryData(["posts"], context?.postsBeforeMutation);
     },
   });

@@ -1,6 +1,6 @@
 import type { User } from "firebase/auth";
 
-const BASE_URL = `http://localhost:3000`;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const getData = async (user: User, route: string) => {
   const token = await user.getIdToken();

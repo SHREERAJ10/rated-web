@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { createRecord, getData } from "../utils/api";
+import { createRecord } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import uploadImage from "../utils/uploadImage";
@@ -8,9 +8,10 @@ import { Camera } from "lucide-react";
 import {
   onboardingSchema,
   type OnboardingInput,
-  type OnboardingSchema,
 } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import type { User } from "firebase/auth";
 
 type AllowedFields = "username" | "displayName" | "bio";
 
@@ -70,8 +71,8 @@ function OnboardingPage() {
         await createRecord(user, "/user", data);
         navigate("/");
       }
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error("Something went wrong!");
     }
   };
 
@@ -81,11 +82,11 @@ function OnboardingPage() {
     let userAvatar = PLACEHOLDER_PFP;
     if (file) {
       try {
-        userAvatar = (await uploadImage(user, file)).secure_url;
+        userAvatar = (await uploadImage(user as User, file)).secure_url;
         setValue("pfpUrl", userAvatar);
         handleSubmit(onSubmit)(e);
-      } catch (err) {
-        console.log(err);
+      } catch {
+        toast.error("Something went wrong!");
       } finally {
         setIsOnboarding(false);
       }
@@ -103,7 +104,7 @@ function OnboardingPage() {
   }, [preview]);
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    handleFileChange(e); // your existing handler still runs
+    handleFileChange(e);
     const file = e.target.files?.[0];
     setPreview(file ? URL.createObjectURL(file) : null);
   }
@@ -111,7 +112,7 @@ function OnboardingPage() {
   return (
     <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
       <form onSubmit={handlePreSubmit} className="flex flex-col gap-8">
-        {/* Avatar upload */}
+        
         <div className="flex flex-col items-center gap-3">
           <input
             ref={fileInputRef}
@@ -159,7 +160,6 @@ function OnboardingPage() {
           </div>
         </div>
 
-        {/* Text fields */}
         <div className="flex flex-col gap-y-4">
           {USER_FIELDS.map((field) => (
             <div key={field.name} className="">

@@ -6,6 +6,7 @@ import { fetchUserByUsername, fetchUserPosts } from "@/api/user.api";
 import Loader from "@/components/Loader";
 import { useParams } from "react-router-dom";
 import { logout } from "@/utils/AuthHandlers";
+import { toast } from "sonner";
 
 function UserProfile() {
   const { user } = useContext(AuthContext);
@@ -28,7 +29,7 @@ function UserProfile() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["userPosts", username],
-    queryFn: ({ pageParam }) => fetchUserPosts(user!, username, pageParam),
+    queryFn: ({ pageParam }) => fetchUserPosts(user!, username as string, pageParam),
     enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
@@ -55,10 +56,8 @@ function UserProfile() {
 
   if (isLoading || !currUser) return <Loader />;
   if (error) {
-    console.log(error);
     return <span>An error occured shit</span>;
   }
-  console.log(hasNextPage);
   return (
     <section className="min-h-screen px-5 py-8 font-primary text-[#1A1A1A] md:px-16 md:pt-12 md:pb-6">
       <div className="mx-auto max-w-3xl">
@@ -103,8 +102,8 @@ function UserProfile() {
             onClick={async () => {
               try {
                 await logout();
-              } catch (err) {
-                console.log(err);
+              } catch {
+                toast.error("Something went wrong!");
               }
             }}
           >
@@ -114,7 +113,7 @@ function UserProfile() {
 
         <section className="flex flex-col items-center gap-y-6 pt-12">
           {posts?.length != 0 &&
-            posts.map((post) => {
+            posts?.map((post) => {
               return <Post key={post.id} post={post} />;
             })}
           <div ref={observerTarget} className="min-h-4">

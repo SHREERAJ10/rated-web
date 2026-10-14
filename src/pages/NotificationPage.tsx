@@ -1,7 +1,9 @@
 import { fetchNotifications, updateNotificationStatus } from "@/api/post.api";
+import Loader from "@/components/Loader";
 import NotificationItem from "@/components/NotificationItem";
 import { AuthContext } from "@/context/AuthContext";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { User } from "firebase/auth";
 import { useContext, useEffect, useRef } from "react";
 
 const groups = ["Today", "Yesterday", "This week", "Earlier"];
@@ -29,9 +31,10 @@ export default function NotificationPage() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    error,
   } = useInfiniteQuery({
     queryKey: ["notifications"],
-    queryFn: async ({ pageParam }) => fetchNotifications(user, pageParam),
+    queryFn: async ({ pageParam }) => fetchNotifications(user!, pageParam),
     enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
@@ -57,10 +60,13 @@ export default function NotificationPage() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   useEffect(() => {
-    (async () => await updateNotificationStatus(user))();
+    (async () => await updateNotificationStatus(user as User))();
   }, [user]);
 
-  if (isLoading) return <span>Loading...</span>;
+  if (isLoading) return <Loader />;
+  if (error) {
+    return <span>An error occured.</span>;
+  }
 
   return (
     <section className="min-h-screen bg-surface-warm px-5 py-8 font-primary text-[#1A1A1A] md:px-16 md:py-12">

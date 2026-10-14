@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import getIconFromName from "../../utils/getIconFromName.jsx";
 import { handleLogin } from "../../utils/AuthHandlers.jsx";
 import { AuthContext } from "../../context/AuthContext.js";
+import { toast } from "sonner";
 
 const LOGIN_FIELDS = [
   {
@@ -20,6 +21,15 @@ const LOGIN_FIELDS = [
     type: "password",
   },
 ];
+
+const authErrorMessages: Record<string, string> = {
+  "auth/invalid-credential": "Invalid email or password.",
+  "auth/email-already-in-use": "An account with this email already exists.",
+  "auth/weak-password": "Password must be at least 6 characters.",
+  "auth/invalid-email": "Please enter a valid email address.",
+  "auth/too-many-requests": "Too many attempts. Try again later.",
+  "auth/network-request-failed": "Network error. Check your connection.",
+};
 
 function Login() {
   const [loginData, setLoginData] = useState({
@@ -54,7 +64,9 @@ function Login() {
               await handleLogin(loginData.email, loginData.password);
               navigate("/");
             } catch (err) {
-              console.log(err);
+              toast.error(
+                authErrorMessages[err.code] ?? "Something went wrong!",
+              );
             }
             setIsLoggingIn(false);
           }}

@@ -28,8 +28,8 @@ import { AuthContext } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUser } from "@/api/user.api";
 import { logout } from "@/utils/AuthHandlers";
+import { toast } from "sonner";
 
-// Icon + new-notification dot. Used by desktop and mobile nav.
 export function NavIcon({
   icon: Icon,
   showDot,
@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
-  const { data: currUser, isLoading } = useQuery({
+  const { data: currUser } = useQuery({
     queryKey: ["user"],
     queryFn: () => fetchUser(user!),
     enabled: !!user,
@@ -75,25 +75,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       setHasNewNotifications: React.Dispatch<React.SetStateAction<boolean>>,
     ) => {
       const accessToken = await user.getIdToken();
-      await fetchEventSource("http://localhost:3000/user/notification/status", {
-        method: "GET",
-        headers: {
-          "Content-Type": "text/event-stream",
-          Authorization: `Bearer ${accessToken}`,
+      await fetchEventSource(
+        `${import.meta.env.VITE_BASE_URL}/user/notification/status`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "text/event-stream",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          openWhenHidden: true,
+          onmessage: (event) => {
+            const data: { isNotificationRead: boolean } = JSON.parse(
+              event.data,
+            );
+            setHasNewNotifications(!data.isNotificationRead);
+          },
         },
-        onmessage: (event) => {
-          const data: { isNotificationRead: boolean } = JSON.parse(event.data);
-          setHasNewNotifications(!data.isNotificationRead);
-        },
-        onerror: (error) => {
-          console.log(error);
-        },
-      });
+      );
     };
-    hasNotifications(user, setHasNewNotifications);
+    hasNotifications(user as User, setHasNewNotifications);
   }, []);
-
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <>
@@ -173,8 +174,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   onClick={async () => {
                     try {
                       await logout();
-                    } catch (err) {
-                      console.log(err);
+                    } catch {
+                      toast.error("Something went wrong!");
                     }
                   }}
                 >
