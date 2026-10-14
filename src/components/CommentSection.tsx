@@ -27,7 +27,7 @@ export function CommentSection() {
 
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
   const { ref: registerRef, ...commentField } = register("comment");
@@ -77,6 +77,7 @@ export function CommentSection() {
   const onComment = useMutation({
     mutationFn: async (newComment) => {
       const comment = await postComment(user, postId, newComment);
+      reset();
       return comment;
     },
 
