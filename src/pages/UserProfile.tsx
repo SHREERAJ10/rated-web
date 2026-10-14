@@ -1,11 +1,11 @@
 import Post from "@/components/Post";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchUserByUsername, fetchUserPosts } from "@/api/user.api";
 import Loader from "@/components/Loader";
 import { useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { logout } from "@/utils/AuthHandlers";
 
 function UserProfile() {
   const { user } = useContext(AuthContext);
@@ -68,7 +68,7 @@ function UserProfile() {
           </h1>
         </div>
 
-        <div className="flex flex-col gap-4 border-b border-border-subtle py-6 sm:flex-row sm:items-center md:gap-8 md:py-8">
+        <div className="relative flex flex-col gap-4 border-b border-border-subtle py-6 sm:flex-row sm:items-center md:gap-8 md:py-8">
           <div className="h-20 w-20 shrink-0 rounded-full border border-border-subtle bg-surface-container-lowest p-0.5 sm:h-16 sm:w-16 md:h-20 md:w-20 md:p-1">
             {currUser.pfpUrl ? (
               <img
@@ -98,6 +98,18 @@ function UserProfile() {
               </p>
             )}
           </div>
+          <button
+            className="absolute right-0 top-6 h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm text-[#1a1a1a] hover:bg-surface-warm sm:static md:hidden"
+            onClick={async () => {
+              try {
+                await logout();
+              } catch (err) {
+                console.log(err);
+              }
+            }}
+          >
+            Logout
+          </button>
         </div>
 
         <section className="flex flex-col items-center gap-y-6 pt-12">
