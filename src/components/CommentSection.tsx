@@ -15,6 +15,9 @@ import {
 import { fetchUser } from "@/api/user.api";
 import { relativeTime } from "@/utils/relativeTime";
 import { MessageCircle, Share2 } from "lucide-react";
+import Loader from "./Loader";
+import { toast } from "sonner";
+import type { User } from "firebase/auth";
 
 interface FormInput {
   comment: string;
@@ -42,12 +45,14 @@ export function CommentSection() {
 
   const {
     data: comments,
+    isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: ["comments", postId],
-    queryFn: ({ pageParam }) => fetchComments(user!, postId, pageParam),
+    queryFn: ({ pageParam }) =>
+      fetchComments(user!, postId as string, pageParam),
     initialPageParam: 0,
     enabled: !!user,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
@@ -58,9 +63,9 @@ export function CommentSection() {
 
   const { data: post, error } = useQuery({
     queryKey: ["post", postId],
-    queryFn: () => fetchSinglePost(user!, postId),
+    queryFn: () => fetchSinglePost(user!, postId as string),
     initialData: () => {
-      const posts = queryClient.getQueryData(["posts"]);
+      const posts: { pages: any[] } = queryClient.getQueryData(["posts"]);
       return posts?.pages
         .flatMap((page) => page.items)
         .find((post) => post.id == postId);
@@ -76,12 +81,16 @@ export function CommentSection() {
 
   const onComment = useMutation({
     mutationFn: async (newComment) => {
-      const comment = await postComment(user, postId, newComment);
+      const comment = await postComment(
+        user as User,
+        postId as string,
+        newComment,
+      );
       reset();
       return comment;
     },
 
-    onMutate: async (newComment: object) => {
+    onMutate: async (newComment: { comment: string }) => {
       await queryClient.cancelQueries({ queryKey: ["comments", postId] });
       await queryClient.cancelQueries({ queryKey: ["post", postId] });
       await queryClient.cancelQueries({ queryKey: ["posts"] });
@@ -103,53 +112,61 @@ export function CommentSection() {
         },
       };
 
-      queryClient.setQueryData(["comments", postId], (oldComments) => {
-        if (!oldComments) return oldComments;
+      queryClient.setQueryData(
+        ["comments", postId],
+        (oldComments: { pages: any[] }) => {
+          if (!oldComments) return oldComments;
 
-        const updatedComments = [...oldComments.pages];
+          const updatedComments = [...oldComments.pages];
 
-        if (updatedComments.length > 0) {
-          updatedComments[0] = {
-            ...updatedComments[0],
-            items: [optimisticComment, ...updatedComments[0].items],
+          if (updatedComments.length > 0) {
+            updatedComments[0] = {
+              ...updatedComments[0],
+              items: [optimisticComment, ...updatedComments[0].items],
+            };
+          }
+          return {
+            ...oldComments,
+            pages: updatedComments,
           };
-        }
-        return {
-          ...oldComments,
-          pages:updatedComments,
-        };
-      });
+        },
+      );
 
       //update single post: comment count
-      queryClient.setQueryData(["post", postId], (oldPost) => {
-        if (!oldPost) return oldPost;
+      queryClient.setQueryData(
+        ["post", postId],
+        (oldPost: { comment: { count: number } }) => {
+          if (!oldPost) return oldPost;
 
-        return {
-          ...oldPost,
-          comment: {
-            count: oldPost.comment.count + 1,
-          },
-        };
-      });
+          return {
+            ...oldPost,
+            comment: {
+              count: oldPost.comment.count + 1,
+            },
+          };
+        },
+      );
 
       //update infinite post: comment count
-      queryClient.setQueryData(["posts"], (oldPosts) => {
+      queryClient.setQueryData(["posts"], (oldPosts: { pages: any[] }) => {
         if (!oldPosts) return oldPosts;
 
         return {
           ...oldPosts,
           pages: oldPosts.pages.map((page) => ({
             ...page,
-            items: page.items.map((oldPost) => {
-              if (oldPost.id !== postId) return oldPost;
+            items: page.items.map(
+              (oldPost: { comment: { count: number }; id: string }) => {
+                if (oldPost.id !== postId) return oldPost;
 
-              return {
-                ...oldPost,
-                comment: {
-                  count: oldPost.comment.count + 1,
-                },
-              };
-            }),
+                return {
+                  ...oldPost,
+                  comment: {
+                    count: oldPost.comment.count + 1,
+                  },
+                };
+              },
+            ),
           })),
         };
       });
@@ -157,8 +174,7 @@ export function CommentSection() {
       return { previousComments, previousSinglePost, previousInfinitePost };
     },
 
-    onError: (err, context) => {
-      console.log(err);
+    onError: (_err, _newComment, context) => {
       queryClient.setQueryData(["comments", postId], context.previousComments);
       queryClient.setQueryData(["post", postId], context.previousSinglePost);
       queryClient.setQueryData(["posts"], context.previousInfinitePost);
@@ -174,8 +190,8 @@ export function CommentSection() {
           onComment.mutate(data);
         }
       }
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error("Something went wrong!");
     }
   };
 
@@ -204,13 +220,10 @@ export function CommentSection() {
     };
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-  // if (isLoading) return;
   if (error) {
-    console.log(error);
+    return <span>An error occured.</span>;
   }
-  if (!post) {
-    return <div>Loading...</div>;
-  }
+  if (!post) return <Loader />;
 
   return (
     <div
@@ -271,7 +284,7 @@ export function CommentSection() {
           </section>
 
           {/* Comments - scrollable, hidden scrollbar */}
-          {comments && (
+          {comments ? (
             <section className="flex flex-col gap-y-5 px-5 py-4 grow min-h-0 overflow-y-auto scrollbar-none">
               {comments.map((comment) => (
                 <Comment key={comment.id} comment={comment} />
@@ -281,6 +294,8 @@ export function CommentSection() {
                 {!hasNextPage && <span>No more comments</span>}
               </div>
             </section>
+          ) : (
+            <Loader />
           )}
 
           {/* Actions row */}

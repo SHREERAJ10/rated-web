@@ -4,7 +4,7 @@ import Feed from "./pages/Feed";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import { onAuthStateChanged } from "firebase/auth";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./context/AuthContext";
 import { auth } from "./config/firebase";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -18,12 +18,14 @@ function App() {
   const location = useLocation();
   const state = location.state || null;
   const backgroundLocation = state?.backgroundLocation || null;
+  const [isLoading, setIsLoading] = useState(true);
 
   const { setUser } = useContext(AuthContext);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        setIsLoading(false);
       } else {
         setUser(null);
       }
@@ -31,6 +33,13 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  if (isLoading)
+    return (
+      <div className="text-5xl flex min-h-screen items-center justify-center bg-[#f8f8f6] text-[#333333] font-medium tracking-wide">
+        Rated
+      </div>
+    );
 
   return (
     <>

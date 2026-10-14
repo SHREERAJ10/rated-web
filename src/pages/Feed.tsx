@@ -1,9 +1,9 @@
-import { logout } from "../utils/AuthHandlers";
 import Post from "@/components/Post";
 import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/api/post.api";
+import Loader from "@/components/Loader";
 
 function Feed() {
   const { user } = useContext(AuthContext);
@@ -54,17 +54,16 @@ function Feed() {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (isLoading) return;
+  if (isLoading) return <Loader />;
   if (error) {
-    console.log(error);
-    return <span>An error occured shit</span>;
+    return <span>An error occured.</span>;
   }
 
   return (
     <>
       <section className="flex flex-col items-center gap-y-6 pt-12 pb-6">
         {posts?.length != 0 &&
-          posts.map((post) => {
+          posts?.map((post) => {
             return <Post key={post.id} post={post} />;
           })}
         <div ref={observerTarget} className="min-h-4">
