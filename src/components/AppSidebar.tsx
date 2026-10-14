@@ -78,11 +78,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       await fetchEventSource("http://localhost:3000/user/notification/status", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "text/event-stream",
           Authorization: `Bearer ${accessToken}`,
         },
         onmessage: (event) => {
-          console.log(event.data);
           const data: { isNotificationRead: boolean } = JSON.parse(event.data);
           setHasNewNotifications(!data.isNotificationRead);
         },
@@ -191,7 +190,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </div>
 
       {/* Mobile: bottom navigation */}
-      <section className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-x-6 border-t border-border-subtle bg-[#FDFDFB]/80 px-4 py-2 backdrop-blur-[20px] md:hidden">
+      <section className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around gap-x-6 border-t border-border-subtle bg-[#FDFDFB]/80 px-4 py-2 backdrop-blur-[20px] md:hidden">
         {navItems.map((item, i) => (
           <React.Fragment key={item.title}>
             {i === 2 && (

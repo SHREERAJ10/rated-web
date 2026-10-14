@@ -1,4 +1,5 @@
 import { relativeTime } from "@/utils/relativeTime";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 export type NotificationData = {
   id: number;
@@ -27,9 +28,13 @@ export default function NotificationItem({
   notification: NotificationData;
 }) {
   const action = `${actions[notification.type]}${notification.rating ? ` ${notification.rating.score}/${notification.rating.total}` : ""}.`;
+  const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-4 px-4 py-4 md:px-6">
+    <div
+      onClick={() => navigate(`/post/${notification.post.postId}`)}
+      className="flex items-center gap-4 px-4 py-4 md:px-6 cursor-pointer"
+    >
       <img
         src={notification.actor.pfpUrl}
         alt={notification.actor.displayName}
@@ -37,9 +42,13 @@ export default function NotificationItem({
       />
 
       <p className="min-w-0 flex-1 text-sm leading-normal text-[#666666] md:text-base">
-        <span className="font-medium text-[#1A1A1A]">
+        <Link
+          to={`/${notification.actor.username}`}
+          className="font-medium text-[#1A1A1A]"
+          onClick={(e) => e.stopPropagation()}
+        >
           {notification.actor.displayName}
-        </span>{" "}
+        </Link>{" "}
         {action}
         <span className="ml-1 text-xs text-[#666666]/70 md:text-sm">
           · {relativeTime(new Date(notification.createdAt).getTime())}

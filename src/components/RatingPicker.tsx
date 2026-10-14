@@ -164,37 +164,37 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
 
   return (
     <section
-      className="fixed inset-0 bg-black/30 w-full h-full flex justify-center items-center z-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onClose}
     >
       <form
-        className="w-1/3 border border-red-700 z-100"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        onSubmit={async (e) => {
+        role="dialog"
+        aria-modal="true"
+        aria-label="Rate this post"
+        className="flex w-full max-w-68 flex-col gap-3 rounded-2xl border border-border-subtle bg-white p-3 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={(e) => {
           e.preventDefault();
-          const postRating = {
-            score: score,
-          };
-          modifyRating.mutate(postRating);
+          modifyRating.mutate({ score });
           onClose();
         }}
       >
-        <WheelPickerWrapper className="border border-slate-700 rounded-xl shadow-lg">
+        <WheelPickerWrapper className="rounded-xl border border-border-subtle bg-[#FBFBFB]">
           <WheelPicker
             options={options}
-            optionItemHeight={60}
+            optionItemHeight={44}
             value={score}
             onValueChange={setScore}
           />
         </WheelPickerWrapper>
-        <div className="flex justify-between w-full">
+
+        <div className="flex items-center gap-2">
           {isRatedByUser ? (
             <Button
               type="button"
-              onClick={async (e) => {
-                e.stopPropagation();
+              variant="outline"
+              className="h-10 flex-1 rounded-xl text-red-600 hover:text-red-700"
+              onClick={() => {
                 removeUserRating.mutate();
                 onClose();
               }}
@@ -202,12 +202,22 @@ function RatingPicker({ postId, onClose, isRatedByUser }: RatingPickerProps) {
               Remove
             </Button>
           ) : (
-            <Button type="button" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 flex-1 rounded-xl"
+              onClick={onClose}
+            >
               Cancel
             </Button>
           )}
 
-          <Button type="submit">Rate</Button>
+          <Button
+            type="submit"
+            className="h-10 flex-1 rounded-xl"
+          >
+            Rate
+          </Button>
         </div>
       </form>
     </section>

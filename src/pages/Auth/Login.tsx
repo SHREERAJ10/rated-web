@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import getIconFromName from "../../utils/getIconFromName.jsx";
 import { handleLogin } from "../../utils/AuthHandlers.jsx";
 import { AuthContext } from "../../context/AuthContext.js";
@@ -96,12 +96,12 @@ function Login() {
         </form>
         <div className="text-lg text-[#11111] flex gap-1 justify-center">
           <span className="font-light">Don't have an account?</span>
-          <a
+          <Link
             className="font-semibold hover:underline cursor-pointer"
-            onClick={() => navigate("/register")}
+            to="/register"
           >
             Register
-          </a>
+          </Link>
         </div>
       </div>
     </div>

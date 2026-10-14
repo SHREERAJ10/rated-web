@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { handleSignUp } from "../../utils/AuthHandlers";
 import getIconFromName from "../../utils/getIconFromName";
 import { AuthContext } from "../../context/AuthContext";
+import { toast } from "sonner";
 
 const SIGN_UP_FIELDS = [
   {
@@ -53,10 +54,11 @@ function Register() {
             try {
               await handleSignUp(signUpData.email, signUpData.password);
               navigate("/onboarding");
-            } catch (err) {
-              console.log(err);
+            } catch {
+              toast.error("Something went wrong!");
+            } finally {
+              setIsSigningUp(false);
             }
-            setIsSigningUp(false);
           }}
         >
           <div className="flex flex-col gap-9">
@@ -96,12 +98,12 @@ function Register() {
         </form>
         <div className="text-lg text-[#11111] flex gap-1 justify-center">
           <span className="font-light">Already have an account?</span>
-          <a
+          <Link
             className="font-semibold hover:underline cursor-pointer"
-            onClick={() => navigate("/")}
+            to="/"
           >
             Login
-          </a>
+          </Link>
         </div>
       </div>
     </div>

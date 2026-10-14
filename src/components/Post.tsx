@@ -1,7 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import CarouselWithPagination from "./carousel-06";
 import PostLike from "./PostLike";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import PostRating from "./PostRating";
 import { relativeTime } from "@/utils/relativeTime";
 
@@ -23,9 +23,12 @@ function Post({ post }) {
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
-            <span className="text-[14px] sm:text-[15px] font-medium text-on-surface">
+            <NavLink
+              to={`/${post.author.username}`}
+              className="text-[14px] sm:text-[15px] font-medium text-on-surface"
+            >
               {post.author.displayName}
-            </span>
+            </NavLink>
             <span className="w-1 h-1 rounded-full bg-outline-variant" />
             <span className="text-[12px] sm:text-[13px] text-on-surface-variant">
               {postTimestamp}
@@ -74,7 +77,9 @@ function Post({ post }) {
           </section>
 
           <div className="px-3 sm:px-4 pb-3 sm:pb-4 text-[14px] sm:text-[15px] leading-[1.6] text-on-surface">
-            <span className="font-semibold">{post.author.displayName}</span>{" "}
+            <NavLink to={`/${post.author.username}`} className="font-semibold">
+              {post.author.displayName}
+            </NavLink>{" "}
             <span className="text-on-surface-variant">{post.caption}</span>
           </div>
         </div>
