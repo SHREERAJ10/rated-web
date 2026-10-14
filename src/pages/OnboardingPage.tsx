@@ -1,9 +1,16 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { createRecord, getData } from "../utils/api";
 import { AuthContext } from "../context/AuthContext";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import uploadImage from "../utils/uploadImage";
 import { useNavigate } from "react-router-dom";
+import { Camera } from "lucide-react";
+import {
+  onboardingSchema,
+  type OnboardingInput,
+  type OnboardingSchema,
+} from "@/schemas/authSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type AllowedFields = "username" | "displayName" | "bio";
 
@@ -15,13 +22,6 @@ interface FormField {
   name: AllowedFields;
   placeholder: string;
   type: string;
-}
-
-interface FormInput {
-  username: string;
-  displayName: string;
-  bio: string;
-  pfpUrl: string;
 }
 
 const USER_FIELDS: FormField[] = [
@@ -48,24 +48,26 @@ const USER_FIELDS: FormField[] = [
 function OnboardingPage() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const { register, handleSubmit } = useForm<FormInput>();
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<OnboardingInput>({
+    resolver: zodResolver(onboardingSchema),
+  });
 
   const [file, setFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
 
   const handleFileChange = (e: Event) => {
     setFile(e.target.files[0]);
   };
 
-  const onSubmit: SubmitHandler<FormInput> = async (data) => {
+  const onSubmit: SubmitHandler<OnboardingInput> = async (data) => {
     try {
       if (user) {
-        let uploadResult;
-        if (file) {
-          uploadResult = await uploadImage(user, file, setImageUrl);
-        }
-        data.pfpUrl = uploadResult?uploadResult.secure_url:PLACEHOLDER_PFP;
-        const userResponse = await createRecord(user, "/user", data);
+        await createRecord(user, "/user", data);
         navigate("/");
       }
     } catch (err) {
@@ -73,40 +75,117 @@ function OnboardingPage() {
     }
   };
 
+  const handlePreSubmit = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsOnboarding(true);
+    e.preventDefault();
+    let userAvatar = PLACEHOLDER_PFP;
+    if (file) {
+      try {
+        userAvatar = (await uploadImage(user, file)).secure_url;
+        setValue("pfpUrl", userAvatar);
+        handleSubmit(onSubmit)(e);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setIsOnboarding(false);
+      }
+    }
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  // free the temporary preview URL when it changes or the page unmounts
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    handleFileChange(e); // your existing handler still runs
+    const file = e.target.files?.[0];
+    setPreview(file ? URL.createObjectURL(file) : null);
+  }
+
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-9">
-          <div className="flex flex-col gap-5">
-            {USER_FIELDS.map((field) => {
-              return (
-                <div
-                  key={field.name}
-                  className="flex items-center gap-2 border border-[#D3D3D3] rounded-2xl bg-[#FBFBFB] pl-5 py-2 pr-1"
-                >
-                  <input
-                    {...register(field.name)}
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    className="outline-none focus:outline-none text-xl placeholder:font-medium text-[#272727] w-full placeholder:text-[#7C7C7C]"
-                  />
-                </div>
-              );
-            })}
-          </div>
+    <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
+      <form onSubmit={handlePreSubmit} className="flex flex-col gap-8">
+        {/* Avatar upload */}
+        <div className="flex flex-col items-center gap-3">
           <input
+            ref={fileInputRef}
+            id="profile"
             type="file"
             name="profile"
             accept="image/png, image/jpeg"
-            onChange={handleFileChange}
+            onChange={onFileChange}
+            className="peer sr-only"
           />
-          <button
-            type="submit"
-            className="px-6 py-3 bg-[#272727] text-semibold text-xl w-full text-[#D9D9D9] rounded-xl cursor-pointer hover:brightness-110 transition-all duration-150 ease-in-out"
+          <label
+            htmlFor="profile"
+            className="group relative flex size-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-[#D3D3D3] bg-[#FBFBFB] transition-colors hover:border-[#7C7C7C] peer-focus-visible:ring-2 peer-focus-visible:ring-[#272727] peer-focus-visible:ring-offset-2 sm:size-28"
           >
-            Confirm
-          </button>
+            {preview ? (
+              <img
+                src={preview}
+                alt="Profile preview"
+                className="size-full object-cover"
+              />
+            ) : (
+              <Camera className="size-7 text-[#7C7C7C]" strokeWidth={1.5} />
+            )}
+          </label>
+
+          <div className="flex items-center gap-3 text-sm">
+            <label
+              htmlFor="profile"
+              className="cursor-pointer font-medium text-[#272727] hover:underline"
+            >
+              {preview ? "Change photo" : "Upload photo"}
+            </label>
+            {preview && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPreview(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+                className="cursor-pointer text-[#7C7C7C] hover:text-[#272727]"
+              >
+                Remove
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Text fields */}
+        <div className="flex flex-col gap-y-4">
+          {USER_FIELDS.map((field) => (
+            <div key={field.name} className="">
+              <input
+                {...register(field.name)}
+                type={field.type}
+                placeholder={field.placeholder}
+                aria-label={field.placeholder}
+                className="rounded-2xl border border-[#D3D3D3] bg-[#FBFBFB] px-5 py-3.5 transition-colors focus-within:border-[#272727] w-full text-base text-[#272727] outline-none placeholder:text-[#7C7C7C]"
+              />
+              {errors[field.name] && (
+                <p className="text-sm text-[#E53E3E] px-2 pt-1">
+                  {errors[field.name]?.message}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          className="w-full cursor-pointer rounded-xl bg-[#272727] px-6 py-3.5 text-base font-semibold text-[#D9D9D9] transition-all duration-150 ease-in-out hover:brightness-110 active:scale-[0.99] sm:text-lg disabled:brightness-90 disabled:cursor-not-allowed"
+          disabled={isOnboarding}
+        >
+          Confirm
+        </button>
       </form>
     </div>
   );
