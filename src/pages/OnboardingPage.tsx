@@ -5,10 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import uploadImage from "../utils/uploadImage";
 import { useNavigate } from "react-router-dom";
 import { Camera } from "lucide-react";
-import {
-  onboardingSchema,
-  type OnboardingInput,
-} from "@/schemas/authSchema";
+import { onboardingSchema, type OnboardingInput } from "@/schemas/authSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import type { User } from "firebase/auth";
@@ -73,6 +70,7 @@ function OnboardingPage() {
       }
     } catch {
       toast.error("Something went wrong!");
+      setIsOnboarding(false);
     }
   };
 
@@ -87,7 +85,6 @@ function OnboardingPage() {
         handleSubmit(onSubmit)(e);
       } catch {
         toast.error("Something went wrong!");
-      } finally {
         setIsOnboarding(false);
       }
     }
@@ -112,7 +109,6 @@ function OnboardingPage() {
   return (
     <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
       <form onSubmit={handlePreSubmit} className="flex flex-col gap-8">
-        
         <div className="flex flex-col items-center gap-3">
           <input
             ref={fileInputRef}

@@ -45,10 +45,10 @@ export function CreatePost({
       await createPost(user as User, data);
       toast.success("Post created successfully");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      setIsDialogOpen(false);
     } catch {
       toast.error("Something went wrong!");
-    } finally {
-      setIsDialogOpen(false);
+      setIsUploading(false);
     }
   };
 
@@ -76,7 +76,6 @@ export function CreatePost({
       handleSubmit(onSubmit)(e);
     } catch {
       toast.error("Something went wrong!");
-    } finally {
       setIsUploading(false);
     }
   };

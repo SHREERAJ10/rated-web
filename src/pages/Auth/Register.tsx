@@ -56,7 +56,6 @@ function Register() {
               navigate("/onboarding");
             } catch {
               toast.error("Something went wrong!");
-            } finally {
               setIsSigningUp(false);
             }
           }}

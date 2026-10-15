@@ -67,8 +67,8 @@ function Login() {
               toast.error(
                 authErrorMessages[err.code] ?? "Something went wrong!",
               );
+              setIsLoggingIn(false);
             }
-            setIsLoggingIn(false);
           }}
         >
           <div className="flex flex-col gap-9">
