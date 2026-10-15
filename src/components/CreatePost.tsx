@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { UploadModal } from "./UploadModal";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import uploadImage from "@/utils/uploadImage";
 import { AuthContext } from "@/context/AuthContext";
 import pLimit from "p-limit";
@@ -34,6 +34,7 @@ export function CreatePost({
     register,
     setValue,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<PostInput>({
     resolver: zodResolver(PostSchema),
@@ -81,7 +82,17 @@ export function CreatePost({
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog
+      open={isDialogOpen}
+      onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (open) {
+          reset();
+          setIsUploading(false);
+          setImagesToUpload([]);
+        }
+      }}
+    >
       <form onSubmit={handlePreSubmit} id="post-dialog">
         <DialogTrigger className="w-full" render={dialogTrigger} />
 
