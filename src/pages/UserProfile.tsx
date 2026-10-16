@@ -55,7 +55,8 @@ function UserProfile() {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (isLoading || !currUser) return <Loader />;
+  if(!currUser) return <Loader />;
+  if (isLoading) return <Loader />;
   if (error) {
     return <span>An error occured shit</span>;
   }
@@ -81,7 +82,7 @@ function UserProfile() {
                 {currUser.displayName.charAt(0).toUpperCase()}
               </div>
             )}
-          </div>
+          </div>    
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
@@ -98,7 +99,7 @@ function UserProfile() {
               </p>
             )}
           </div>
-          {user?.uid === currUser.uid && (
+          {(user?.uid == currUser?.id) && (
             <button
               className="absolute right-0 top-6 h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm text-[#1a1a1a] hover:bg-surface-warm sm:static md:hidden"
               onClick={async () => {
