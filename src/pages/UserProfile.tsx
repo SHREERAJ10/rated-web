@@ -29,7 +29,8 @@ function UserProfile() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["userPosts", username],
-    queryFn: ({ pageParam }) => fetchUserPosts(user!, username as string, pageParam),
+    queryFn: ({ pageParam }) =>
+      fetchUserPosts(user!, username as string, pageParam),
     enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
@@ -97,18 +98,20 @@ function UserProfile() {
               </p>
             )}
           </div>
-          <button
-            className="absolute right-0 top-6 h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm text-[#1a1a1a] hover:bg-surface-warm sm:static md:hidden"
-            onClick={async () => {
-              try {
-                await logout();
-              } catch {
-                toast.error("Something went wrong!");
-              }
-            }}
-          >
-            Logout
-          </button>
+          {user?.uid === currUser.uid && (
+            <button
+              className="absolute right-0 top-6 h-9 shrink-0 cursor-pointer rounded-lg px-3 text-sm text-[#1a1a1a] hover:bg-surface-warm sm:static md:hidden"
+              onClick={async () => {
+                try {
+                  await logout();
+                } catch {
+                  toast.error("Something went wrong!");
+                }
+              }}
+            >
+              Logout
+            </button>
+          )}
         </div>
 
         <section className="flex flex-col items-center gap-y-6 pt-12">
