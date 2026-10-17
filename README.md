@@ -1,75 +1,114 @@
-# React + TypeScript + Vite
+# Rated
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Rated is a social platform where users can share posts, rate other users' posts, and interact through likes and comments. It combines a casual social-media experience with user profiles, a ranked feed, and notification status updates.
 
-Currently, two official plugins are available:
+## Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Application:** [Try Rated](https://itsrated.vercel.app/)
+- **Test account:** `testuser1@gmail.com`
+- **Password:** `password123`
 
-## React Compiler
+Use the test account to explore the application's features without creating a new account.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Repositories
 
-## Expanding the ESLint configuration
+- **Frontend:** [Frontend Repository](https://github.com/SHREERAJ10/rated-web)
+- **Backend:** [Backend Repository](https://github.com/SHREERAJ10/rated-server)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Features
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Authentication** — User authentication with Firebase.
+- **Posts** — Create posts with captions and images.
+- **Post ratings** — Rate posts shared by other users.
+- **Likes and comments** — Interact with posts and engage with other users.
+- **User profiles** — View user information and their posts.
+- **Ranked feed** — A deterministic ranking algorithm determines the order of posts in the feed.
+- **Infinite scrolling** — Load additional posts as you scroll through the feed.
+- **User search** — Search for users by username or display name, including partial matches.
+- **Notification status** — Receive notification-status updates every 30 seconds, with a highlighted badge indicating new notifications.
+- **Responsive interface** — A responsive UI for navigating and interacting with the application.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Frontend**
+- React
+- TypeScript
+- React Router
+- TanStack Query
+- Tailwind CSS
+- shadcn/ui
 
+**Backend**
+- Node.js
+- Express
+- TypeScript
+- Prisma ORM
+- PostgreSQL (Neon)
+
+**Services and Libraries**
+- Firebase Authentication
+- Cloudinary for image storage
+- `@microsoft/fetch-event-source` for Server-Sent Events (SSE)
+
+## Engineering Highlights
+
+- **Server-state management:** Used TanStack Query for caching, infinite queries, and optimistic updates to keep the interface responsive while synchronizing changes with the server.
+- **Feed ranking:** Implemented a deterministic ranking algorithm to determine the order of posts in the feed.
+- **Secure image uploads:** Used signed Cloudinary uploads to authorize uploads without exposing the signing secret to the client.
+- **Failure handling:** Clean up uploaded Cloudinary media when the corresponding database operation fails, preventing orphaned uploads.
+- **Partial-match search:** Used PostgreSQL's `pg_trgm` extension with GIN indexes to support efficient searches across usernames and display names.
+- **Notification updates:** Used Server-Sent Events with `@microsoft/fetch-event-source` to periodically send notification status to connected clients.
+
+## Running Locally
+
+The frontend and backend are maintained in separate repositories. Clone and configure each repository independently.
+
+### Prerequisites
+
+- Node.js
+- pnpm
+- A PostgreSQL database
+- A Firebase project with Authentication configured
+- A Cloudinary account
+
+### 1. Clone the repositories
+
+```bash
+git clone https://github.com/SHREERAJ10/rated-web
+git clone https://github.com/SHREERAJ10/rated-server
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Run the following commands in each repository's directory:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+pnpm install
 ```
+
+### 3. Configure environment variables
+
+Set up the required environment variables in each repository.
+
+- **Frontend:** Firebase configuration and backend API URL.
+- **Backend:** Database connection, Firebase authentication verification, and Cloudinary credentials.
+
+Refer to each repository's configuration and scripts for the exact variable names.
+
+### 4. Set up the backend
+
+In the backend repository, run the required database migrations and generate the Prisma client using the configured scripts.
+
+Start the backend using its development script.
+
+### 5. Start the frontend
+
+In the frontend repository, start the application using its development script.
+
+Make sure the backend is running and accessible at the API URL configured in the frontend.
+
+**Note:** Keep secret keys and database credentials in environment variables. Never commit them to either repository.
+
+## Status
+
+Completed and deployed.
